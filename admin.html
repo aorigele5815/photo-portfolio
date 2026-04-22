@@ -533,15 +533,30 @@ async function loadPhotoList() {
   } catch { return []; }
 }
 
+async function putPhotosJson(content, message, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const existing = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
+    try {
+      await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
+        message,
+        content,
+        sha: existing.sha
+      });
+      return;
+    } catch(err) {
+      if (attempt < maxRetries - 1 && (err.message.includes('SHA') || err.message.includes('409') || err.message.includes('conflict'))) {
+        await new Promise(r => setTimeout(r, 500));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 async function savePhotoList(list) {
-  const content = JSON.stringify(list, null, 2);
-  const encoded = btoa(unescape(encodeURIComponent(content)));
-  const existing = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
-  await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
-    message: 'Update photos list',
-    content: encoded,
-    sha: existing.sha
-  });
+  const jsonContent = JSON.stringify(list, null, 2);
+  const encoded = btoa(unescape(encodeURIComponent(jsonContent)));
+  await putPhotosJson(encoded, 'Update photos list');
   await triggerCFDeploy();
 }
 
@@ -663,19 +678,13 @@ function setSyncBtnState(loading) {
 async function doSync() {
   if (!ghToken()) { toast('请先填写 GitHub PAT', 'error'); return; }
   setSyncBtnState(true);
-  showOverlay('同步中...', '获取 GitHub 数据');
+  showOverlay('同步中...', '获取 photos.json');
   try {
-    const [photosRes] = await Promise.all([
-      ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`)
-    ]);
+    const photosRes = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
     const photosContent = JSON.parse(atob(photosRes.content));
     const photosEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(photosContent, null, 2))));
     showOverlay('同步中...', '推送 photos.json');
-    await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
-      message: 'Sync photos (' + photosContent.length + ' photos)',
-      content: photosEncoded,
-      sha: photosRes.sha
-    });
+    await putPhotosJson(photosEncoded, 'Sync photos (' + photosContent.length + ' photos)');
     showOverlay('同步中...', '触发 CF Pages 部署');
     await triggerCFDeploy();
     toast('同步完成，共 ' + photosContent.length + ' 张照片', 'success');
