@@ -284,20 +284,6 @@ body {
 </nav>
 
 <!-- Token 配置 -->
-<div id="token-view">
-  <h1>管理后台</h1>
-  <p class="sub">PORTFOLIO ADMIN</p>
-  <div class="login-box">
-    <label>GitHub Token</label>
-    <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxx" autocomplete="off">
-    <label style="margin-top:12px">Cloudflare 邮箱</label>
-    <input type="email" id="cf-email-input" placeholder="1451482931@qq.com" autocomplete="off">
-    <label>Cloudflare API Key</label>
-    <input type="password" id="cf-key-input" placeholder="cf_xxxxxxxxxxxxx" autocomplete="off">
-    <button onclick="saveToken()">保 存</button>
-    <div class="error" id="token-error"></div>
-  </div>
-</div>
 
 <!-- 登录页 -->
 <div id="login-view" style="display:none">
@@ -378,35 +364,13 @@ async function checkLogin() {
   loadPhotos();
 }
 
-function saveToken() {
-  const t = document.getElementById('token-input').value.trim();
-  if (!t.startsWith('ghp_')) { document.getElementById('token-error').textContent = 'Token 必须以 ghp_ 开头'; return; }
-  localStorage.setItem('gh_token', t);
-  localStorage.setItem('cf_email', document.getElementById('cf-email-input').value.trim());
-  localStorage.setItem('cf_api_key', document.getElementById('cf-key-input').value.trim());
-  document.getElementById('token-view').style.display = 'none';
-  document.getElementById('login-view').style.display = 'flex';
-}
-
 function logout() {
   sessionStorage.removeItem('logged_in');
   location.reload();
 }
 
-// Auto-run: show appropriate screen
+// Auto-run: password only, token pre-configured
 (function init() {
-  const token = localStorage.getItem('gh_token');
-  // 预填 Cloudflare
-  const savedEmail = localStorage.getItem('cf_email');
-  const savedKey = localStorage.getItem('cf_api_key');
-  if (savedEmail) document.getElementById('cf-email-input').value = savedEmail;
-  if (savedKey) document.getElementById('cf-key-input').value = savedKey;
-  if (!token) {
-    document.getElementById('token-view').style.display = 'flex';
-    document.getElementById('login-view').style.display = 'none';
-    return;
-  }
-  document.getElementById('token-view').style.display = 'none';
   if (sessionStorage.getItem('logged_in') === '1') {
     document.getElementById('login-view').style.display = 'none';
     document.getElementById('admin-view').style.display = 'block';
