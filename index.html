@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>烂片王中王 · ORGIL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Inter:wght@300&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#080808;--text:#d8d4cc;--dim:#5a5650;--gold:#c9a96e}
+    body{background:var(--bg);color:var(--text);font-family:"Inter",sans-serif;font-weight:300;overflow-x:hidden}
+    #loader{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .8s,visibility .8s}
+    #loader.out{opacity:0;visibility:hidden}
+    .ld-t{font-family:"Cormorant Garamond",serif;font-size:24px;letter-spacing:.3em;color:var(--text)}
+    .ld-t em{color:var(--gold);font-style:italic}
+    .ld-b{width:100px;height:1px;background:#1a1a1a;position:relative;overflow:hidden}
+    .ld-b::after{content:"";position:absolute;top:0;left:-100%;width:100%;height:1px;background:var(--gold);animation:lb 1.5s ease forwards}
+    @keyframes lb{to{left:0}}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:24px 40px;background:linear-gradient(to bottom,rgba(8,8,8,.9) 0%,transparent 100%);transition:all .4s}
+    nav.s{background:rgba(8,8,8,.96);backdrop-filter:blur(16px);padding:16px 40px}
+    .nl{font-family:"Cormorant Garamond",serif;font-size:17px;letter-spacing:.18em;color:var(--text);text-decoration:none}
+    .nl em{color:var(--gold);font-style:italic}
+    .nn{font-size:10px;letter-spacing:.15em;color:var(--dim)}
+    #hero{height:100vh;display:flex;align-items:flex-end;padding:0 40px 64px;position:relative;overflow:hidden}
+    .hbg{position:absolute;inset:0;background:linear-gradient(160deg,#100e0b 0%,#080808 60%)}
+    .hf{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.98) 0%,rgba(8,8,8,.3) 50%,transparent 100%)}
+    .ht{position:relative;z-index:2}
+    .hl{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;opacity:0;animation:up .8s .4s forwards;transform:translateY(20px)}
+    .hh{font-family:"Cormorant Garamond",serif;font-size:clamp(48px,8vw,88px);font-weight:300;line-height:1.05;color:#fff;margin-bottom:18px;opacity:0;animation:up .8s .6s forwards;transform:translateY(20px)}
+    .hh em{font-style:italic;color:var(--gold)}
+    .hs{font-size:12px;letter-spacing:.1em;color:var(--dim);opacity:0;animation:up .8s .8s forwards;transform:translateY(20px)}
+    @keyframes up{to{opacity:1;transform:none}}
+    #gallery{padding:40px 28px 80px}
+    .masonry{columns:3;column-gap:8px}
+    @media(max-width:900px){.masonry{columns:2}}
+    @media(max-width:560px){.masonry{columns:1}}
+    .photo-item{break-inside:avoid;margin-bottom:8px;overflow:hidden;cursor:zoom-in;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+    .photo-item.in{opacity:1;transform:none}
+    .photo-item img{display:block;width:100%;height:auto;transition:transform .6s cubic-bezier(.25,.46,.45,.94),filter .4s,opacity .4s;filter:brightness(.88) saturate(.95)}
+    .photo-item img.loaded{filter:brightness(1) saturate(1.05)}
+    .photo-item:hover img{transform:scale(1.03)}
+    #lb{position:fixed;inset:0;z-index:1000;background:rgba(5,5,5,.97);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s}
+    #lb.open{opacity:1;pointer-events:all}
+    #lb-img{max-width:90vw;max-height:88vh;object-fit:contain;display:block;transform:scale(.96);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .15s}
+    #lb.open #lb-img{transform:scale(1)}
+    #lb-img.fade{opacity:0}
+    .lbtn{position:fixed;background:none;border:1px solid rgba(255,255,255,.1);color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;font-size:16px}
+    .lbtn:hover{border-color:var(--gold);color:var(--gold)}
+    #lb-x{top:24px;right:32px;width:40px;height:40px;border-radius:50%}
+    #lb-p{left:16px;top:50%;transform:translateY(-50%);width:44px;height:44px}
+    #lb-n{right:16px;top:50%;transform:translateY(-50%);width:44px;height:44px}
+    #lb-num{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.2em;color:var(--dim)}
+    footer{padding:28px 40px;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between}
+    .ft{font-family:"Cormorant Garamond",serif;font-size:14px;color:var(--dim)}
+    .fc{font-size:11px;color:var(--dim);opacity:.4}
+  </style>
+</head>
+<body>
+<div id="loader"><div class="ld-t">烂片<em>王中王</em></div><div class="ld-b"></div></div>
+<nav id="nav">
+  <a href="#" class="nl">ORGIL &middot; <em>烂片王中王</em></a>
+  <span class="nn" id="nc">— 张</span>
+</nav>
+<section id="hero">
+  <div class="hbg"></div><div class="hf"></div>
+  <div class="ht">
+    <p class="hl">摄影 &middot; Photography</p>
+    <h1 class="hh">烂片<br><em>王中王</em></h1>
+    <p class="hs">ORGIL &middot; 那些没打算好看的瞬间</p>
+  </div>
+</section>
+<section id="gallery">
+  <div class="masonry" id="masonry">
+    <div class="photo-item" data-index="0" onclick="openLightbox(0)"><img src="photos/thumbs/0B69547C-EFE5-4702-943F-DDA004B3F6CA.jpeg" srcset="photos/0B69547C-EFE5-4702-943F-DDA004B3F6CA.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="1" onclick="openLightbox(1)"><img src="photos/thumbs/0C4848EC-03F2-4D73-8766-55F99B7CC821.jpeg" srcset="photos/0C4848EC-03F2-4D73-8766-55F99B7CC821.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="2" onclick="openLightbox(2)"><img src="photos/thumbs/0EBA638A-26FA-4715-9995-3F1EA4EEAD9E.jpeg" srcset="photos/0EBA638A-26FA-4715-9995-3F1EA4EEAD9E.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="3" onclick="openLightbox(3)"><img src="photos/thumbs/118A6717-A502-4AF8-B296-2F47D148B6AE.jpeg" srcset="photos/118A6717-A502-4AF8-B296-2F47D148B6AE.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="4" onclick="openLightbox(4)"><img src="photos/thumbs/160F83D9-88F4-41E1-9024-568C9B9237DA.jpeg" srcset="photos/160F83D9-88F4-41E1-9024-568C9B9237DA.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="5" onclick="openLightbox(5)"><img src="photos/thumbs/170D4ED7-2613-42E9-83E5-113F0824623C.jpeg" srcset="photos/170D4ED7-2613-42E9-83E5-113F0824623C.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="6" onclick="openLightbox(6)"><img src="photos/thumbs/179A8CF8-D41E-48BB-AD32-A2DD986AE030.jpeg" srcset="photos/179A8CF8-D41E-48BB-AD32-A2DD986AE030.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="7" onclick="openLightbox(7)"><img src="photos/thumbs/1DE7F214-641B-4D0A-A93F-D21D16FC182B.jpeg" srcset="photos/1DE7F214-641B-4D0A-A93F-D21D16FC182B.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="8" onclick="openLightbox(8)"><img src="photos/thumbs/1E61F92E-6695-4F68-8099-C4FF6E284670.jpeg" srcset="photos/1E61F92E-6695-4F68-8099-C4FF6E284670.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="9" onclick="openLightbox(9)"><img src="photos/thumbs/23B86538-60B8-4BF3-95CF-7BAF13DE0148.jpeg" srcset="photos/23B86538-60B8-4BF3-95CF-7BAF13DE0148.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="10" onclick="openLightbox(10)"><img src="photos/thumbs/248EDF71-54DD-4BC4-977C-93DFE27F3B73.jpeg" srcset="photos/248EDF71-54DD-4BC4-977C-93DFE27F3B73.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="11" onclick="openLightbox(11)"><img src="photos/thumbs/264ABC2F-841E-4BB3-82DC-EAE1FF0F7C3D.jpeg" srcset="photos/264ABC2F-841E-4BB3-82DC-EAE1FF0F7C3D.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="12" onclick="openLightbox(12)"><img src="photos/thumbs/27C3565E-C062-4FBF-ACB4-C271C91306A0.jpeg" srcset="photos/27C3565E-C062-4FBF-ACB4-C271C91306A0.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="13" onclick="openLightbox(13)"><img src="photos/thumbs/3C554525-03FA-4EBB-8C34-642B88E888AD.jpeg" srcset="photos/3C554525-03FA-4EBB-8C34-642B88E888AD.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="14" onclick="openLightbox(14)"><img src="photos/thumbs/3CAE7B85-6405-422F-B957-E9DC09D21781.jpeg" srcset="photos/3CAE7B85-6405-422F-B957-E9DC09D21781.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="15" onclick="openLightbox(15)"><img src="photos/thumbs/42567499-7F26-422D-A937-BA75E3D2164E.jpeg" srcset="photos/42567499-7F26-422D-A937-BA75E3D2164E.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="16" onclick="openLightbox(16)"><img src="photos/thumbs/43A37D3E-0271-46F9-AD72-D98C1944C993.jpeg" srcset="photos/43A37D3E-0271-46F9-AD72-D98C1944C993.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="17" onclick="openLightbox(17)"><img src="photos/thumbs/4CE6699E-B174-4481-A65D-76160086416A.jpeg" srcset="photos/4CE6699E-B174-4481-A65D-76160086416A.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="18" onclick="openLightbox(18)"><img src="photos/thumbs/4CEE4D48-D05E-4040-89C0-39B293DB94AF.jpeg" srcset="photos/4CEE4D48-D05E-4040-89C0-39B293DB94AF.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="19" onclick="openLightbox(19)"><img src="photos/thumbs/4D4B9D12-7FCD-4093-A16B-69042D8B242D.jpeg" srcset="photos/4D4B9D12-7FCD-4093-A16B-69042D8B242D.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="20" onclick="openLightbox(20)"><img src="photos/thumbs/4E05C40B-EBDE-422C-A423-EC688833A90A.jpeg" srcset="photos/4E05C40B-EBDE-422C-A423-EC688833A90A.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="21" onclick="openLightbox(21)"><img src="photos/thumbs/4E28ABD5-C690-46AC-A13D-5857D81CEC7F.jpeg" srcset="photos/4E28ABD5-C690-46AC-A13D-5857D81CEC7F.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="22" onclick="openLightbox(22)"><img src="photos/thumbs/4FE22E1E-F464-4735-A383-1D714AAFC828.jpeg" srcset="photos/4FE22E1E-F464-4735-A383-1D714AAFC828.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="23" onclick="openLightbox(23)"><img src="photos/thumbs/50E3F92A-A26A-4C3A-AB4A-FD6F8FC3866C.jpg" srcset="photos/50E3F92A-A26A-4C3A-AB4A-FD6F8FC3866C.jpg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="24" onclick="openLightbox(24)"><img src="photos/thumbs/5665CC62-627D-4878-8EEC-875DBD7600B2.jpeg" srcset="photos/5665CC62-627D-4878-8EEC-875DBD7600B2.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="25" onclick="openLightbox(25)"><img src="photos/thumbs/5730C1C5-8B25-4E3E-9432-C20A9390CA5F.jpeg" srcset="photos/5730C1C5-8B25-4E3E-9432-C20A9390CA5F.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="26" onclick="openLightbox(26)"><img src="photos/thumbs/59573DCD-EC26-4DB0-AFDB-051F7CEF3C68.jpeg" srcset="photos/59573DCD-EC26-4DB0-AFDB-051F7CEF3C68.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="27" onclick="openLightbox(27)"><img src="photos/thumbs/5A189C15-60CC-474A-AB37-C982873502C2.jpeg" srcset="photos/5A189C15-60CC-474A-AB37-C982873502C2.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="28" onclick="openLightbox(28)"><img src="photos/thumbs/5A65B691-300E-4169-A653-FA83CBCD7722.jpeg" srcset="photos/5A65B691-300E-4169-A653-FA83CBCD7722.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="29" onclick="openLightbox(29)"><img src="photos/thumbs/5B27F834-007A-4232-914A-343F85E339AB.jpeg" srcset="photos/5B27F834-007A-4232-914A-343F85E339AB.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="30" onclick="openLightbox(30)"><img src="photos/thumbs/5C6A0B23-2392-4352-9DA6-76E969F06AD9.jpeg" srcset="photos/5C6A0B23-2392-4352-9DA6-76E969F06AD9.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="31" onclick="openLightbox(31)"><img src="photos/thumbs/5CE2C2B8-59DB-41D7-A0DA-085B7E1D663F.jpeg" srcset="photos/5CE2C2B8-59DB-41D7-A0DA-085B7E1D663F.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="32" onclick="openLightbox(32)"><img src="photos/thumbs/5FFF20BC-225A-4436-BC30-89CFDB1DCE32.jpeg" srcset="photos/5FFF20BC-225A-4436-BC30-89CFDB1DCE32.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="33" onclick="openLightbox(33)"><img src="photos/thumbs/605F480B-F44A-4F83-94F4-8078C3785FD9.jpeg" srcset="photos/605F480B-F44A-4F83-94F4-8078C3785FD9.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="34" onclick="openLightbox(34)"><img src="photos/thumbs/623ECAF4-49D7-4F39-ADFC-9357C0A049FD.jpeg" srcset="photos/623ECAF4-49D7-4F39-ADFC-9357C0A049FD.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="35" onclick="openLightbox(35)"><img src="photos/thumbs/634F2701-0245-4D78-9035-6518EF9FF5BA.jpeg" srcset="photos/634F2701-0245-4D78-9035-6518EF9FF5BA.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="36" onclick="openLightbox(36)"><img src="photos/thumbs/635FF1C9-2BBA-4626-9C4A-1E8656848DC5.jpeg" srcset="photos/635FF1C9-2BBA-4626-9C4A-1E8656848DC5.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="37" onclick="openLightbox(37)"><img src="photos/thumbs/774D5337-E131-436A-B596-DEEFABB86922.jpeg" srcset="photos/774D5337-E131-436A-B596-DEEFABB86922.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="38" onclick="openLightbox(38)"><img src="photos/thumbs/786B296F-10BE-49F7-8CA2-B6EB2CCC1D76.jpeg" srcset="photos/786B296F-10BE-49F7-8CA2-B6EB2CCC1D76.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="39" onclick="openLightbox(39)"><img src="photos/thumbs/78BDCA77-AB5D-4319-B2FC-649ECEE50275.jpeg" srcset="photos/78BDCA77-AB5D-4319-B2FC-649ECEE50275.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="40" onclick="openLightbox(40)"><img src="photos/thumbs/797916F7-8E2B-4A09-BD29-4F6403DF9D11.jpeg" srcset="photos/797916F7-8E2B-4A09-BD29-4F6403DF9D11.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="41" onclick="openLightbox(41)"><img src="photos/thumbs/7C043201-74DF-4127-A154-FF2490F4A1C8.jpeg" srcset="photos/7C043201-74DF-4127-A154-FF2490F4A1C8.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="42" onclick="openLightbox(42)"><img src="photos/thumbs/7D492874-2A52-451B-A843-D67F654DE5CF.jpeg" srcset="photos/7D492874-2A52-451B-A843-D67F654DE5CF.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="43" onclick="openLightbox(43)"><img src="photos/thumbs/80AE4F49-E11E-4878-9E1F-0CD54CA82BE9.jpeg" srcset="photos/80AE4F49-E11E-4878-9E1F-0CD54CA82BE9.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="44" onclick="openLightbox(44)"><img src="photos/thumbs/835E2021-394E-4F84-AC77-CD8C4451E3B9.jpeg" srcset="photos/835E2021-394E-4F84-AC77-CD8C4451E3B9.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="45" onclick="openLightbox(45)"><img src="photos/thumbs/8BCF9927-B28D-4E84-A1D1-0D1A6E78F47D.jpeg" srcset="photos/8BCF9927-B28D-4E84-A1D1-0D1A6E78F47D.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="46" onclick="openLightbox(46)"><img src="photos/thumbs/93393135-B240-4212-B236-3FB78944E50D.jpeg" srcset="photos/93393135-B240-4212-B236-3FB78944E50D.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="47" onclick="openLightbox(47)"><img src="photos/thumbs/935E7005-D732-47F9-8D99-627AD1891636.jpeg" srcset="photos/935E7005-D732-47F9-8D99-627AD1891636.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="48" onclick="openLightbox(48)"><img src="photos/thumbs/A0903AA1-8979-4ABE-AAD3-0BEF4188637F.jpg" srcset="photos/A0903AA1-8979-4ABE-AAD3-0BEF4188637F.jpg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="49" onclick="openLightbox(49)"><img src="photos/thumbs/A27B1B83-3AA6-4720-B4B2-ACC3941FB04D.jpeg" srcset="photos/A27B1B83-3AA6-4720-B4B2-ACC3941FB04D.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="50" onclick="openLightbox(50)"><img src="photos/thumbs/A27D107A-511A-4E9C-B8E6-751E15C85CF7.jpeg" srcset="photos/A27D107A-511A-4E9C-B8E6-751E15C85CF7.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="51" onclick="openLightbox(51)"><img src="photos/thumbs/AE4D7B1D-DCAD-4708-85A1-D00E806D5E0B.jpeg" srcset="photos/AE4D7B1D-DCAD-4708-85A1-D00E806D5E0B.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="52" onclick="openLightbox(52)"><img src="photos/thumbs/B30F9EAB-49A4-4A89-94F6-F0B846B26747.jpeg" srcset="photos/B30F9EAB-49A4-4A89-94F6-F0B846B26747.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="53" onclick="openLightbox(53)"><img src="photos/thumbs/B7935DCF-60D3-48A0-9B0E-9721D19FFB59.jpeg" srcset="photos/B7935DCF-60D3-48A0-9B0E-9721D19FFB59.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="54" onclick="openLightbox(54)"><img src="photos/thumbs/BAB8EFDE-8BAE-4AE7-AC78-BDF2EACCD140.jpeg" srcset="photos/BAB8EFDE-8BAE-4AE7-AC78-BDF2EACCD140.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="55" onclick="openLightbox(55)"><img src="photos/thumbs/BF5DC6AF-802D-4650-B8C0-8B77504781FF.jpeg" srcset="photos/BF5DC6AF-802D-4650-B8C0-8B77504781FF.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="56" onclick="openLightbox(56)"><img src="photos/thumbs/C01ED6A3-702E-4C3F-94FB-B44AD976516C.jpeg" srcset="photos/C01ED6A3-702E-4C3F-94FB-B44AD976516C.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="57" onclick="openLightbox(57)"><img src="photos/thumbs/C11DC73C-D8AF-4121-9913-E18232283555.jpg" srcset="photos/C11DC73C-D8AF-4121-9913-E18232283555.jpg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="58" onclick="openLightbox(58)"><img src="photos/thumbs/C24C7038-0B8B-4807-9899-E6252FC3AC9B.jpeg" srcset="photos/C24C7038-0B8B-4807-9899-E6252FC3AC9B.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="59" onclick="openLightbox(59)"><img src="photos/thumbs/C4720F34-6608-4259-B554-51E929977298.jpeg" srcset="photos/C4720F34-6608-4259-B554-51E929977298.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="60" onclick="openLightbox(60)"><img src="photos/thumbs/C4CFE873-28EB-450E-A000-70680F280275.jpeg" srcset="photos/C4CFE873-28EB-450E-A000-70680F280275.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="61" onclick="openLightbox(61)"><img src="photos/thumbs/C629D79D-5C2E-4A2E-8628-AD19B42B48CC.jpeg" srcset="photos/C629D79D-5C2E-4A2E-8628-AD19B42B48CC.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="62" onclick="openLightbox(62)"><img src="photos/thumbs/C6945928-E8CF-4D2A-A382-5BCF60D70A86.jpeg" srcset="photos/C6945928-E8CF-4D2A-A382-5BCF60D70A86.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="63" onclick="openLightbox(63)"><img src="photos/thumbs/C92E4997-CBF9-40C8-BB1F-73201269DC54.jpeg" srcset="photos/C92E4997-CBF9-40C8-BB1F-73201269DC54.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="64" onclick="openLightbox(64)"><img src="photos/thumbs/CBDAB193-1948-4870-8933-F528C1F0DC69.jpeg" srcset="photos/CBDAB193-1948-4870-8933-F528C1F0DC69.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="65" onclick="openLightbox(65)"><img src="photos/thumbs/CF3A8F50-A958-4D33-9C04-3FE8C93B889B.jpeg" srcset="photos/CF3A8F50-A958-4D33-9C04-3FE8C93B889B.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="66" onclick="openLightbox(66)"><img src="photos/thumbs/D0B59C63-36D4-43E4-95B6-2C739DEDA4F9.jpeg" srcset="photos/D0B59C63-36D4-43E4-95B6-2C739DEDA4F9.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="67" onclick="openLightbox(67)"><img src="photos/thumbs/D9C4FDC5-140A-46A3-8944-4BFB1107B424.jpeg" srcset="photos/D9C4FDC5-140A-46A3-8944-4BFB1107B424.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="68" onclick="openLightbox(68)"><img src="photos/thumbs/DCB90A15-506D-4D3F-AA07-8CDC43EA3A20.jpeg" srcset="photos/DCB90A15-506D-4D3F-AA07-8CDC43EA3A20.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="69" onclick="openLightbox(69)"><img src="photos/thumbs/DCDA0DA5-A907-40B3-8204-D312E35D56F8.jpeg" srcset="photos/DCDA0DA5-A907-40B3-8204-D312E35D56F8.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="70" onclick="openLightbox(70)"><img src="photos/thumbs/E0D24E34-B6AB-4533-84BB-794F8D3F8007.jpeg" srcset="photos/E0D24E34-B6AB-4533-84BB-794F8D3F8007.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="71" onclick="openLightbox(71)"><img src="photos/thumbs/EAC47E05-1F3F-475B-9301-0F1FA68C2BE2.jpeg" srcset="photos/EAC47E05-1F3F-475B-9301-0F1FA68C2BE2.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="72" onclick="openLightbox(72)"><img src="photos/thumbs/EB77B21E-140B-4AB0-B93D-F384D4E96B83.jpg" srcset="photos/EB77B21E-140B-4AB0-B93D-F384D4E96B83.jpg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="73" onclick="openLightbox(73)"><img src="photos/thumbs/EBE648E1-2E9D-4E8C-AE43-CB2C6F3859A0.jpeg" srcset="photos/EBE648E1-2E9D-4E8C-AE43-CB2C6F3859A0.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="74" onclick="openLightbox(74)"><img src="photos/thumbs/ECEAA845-E1E0-4C30-9B74-D042C1EA41D8.jpeg" srcset="photos/ECEAA845-E1E0-4C30-9B74-D042C1EA41D8.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="75" onclick="openLightbox(75)"><img src="photos/thumbs/EE1191D5-39B1-4566-BE8E-6DC0EF36D352.jpeg" srcset="photos/EE1191D5-39B1-4566-BE8E-6DC0EF36D352.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="76" onclick="openLightbox(76)"><img src="photos/thumbs/F33F315D-B3BC-4017-890B-CE9714208BB5.jpeg" srcset="photos/F33F315D-B3BC-4017-890B-CE9714208BB5.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="77" onclick="openLightbox(77)"><img src="photos/thumbs/F6523666-6880-4BB9-92B2-DD23A0A70A3A.jpeg" srcset="photos/F6523666-6880-4BB9-92B2-DD23A0A70A3A.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="78" onclick="openLightbox(78)"><img src="photos/thumbs/F8AABAD5-AAAE-4F1C-BED1-70699045DB02.jpeg" srcset="photos/F8AABAD5-AAAE-4F1C-BED1-70699045DB02.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="79" onclick="openLightbox(79)"><img src="photos/thumbs/F92E5BF4-18F0-4E2D-B3E6-E56C6ADBA40E.jpeg" srcset="photos/F92E5BF4-18F0-4E2D-B3E6-E56C6ADBA40E.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="80" onclick="openLightbox(80)"><img src="photos/thumbs/FD03A818-0367-41FE-9D25-8CC2A535DD26.jpeg" srcset="photos/FD03A818-0367-41FE-9D25-8CC2A535DD26.jpeg 2x" alt="" loading="lazy"></div>
+    <div class="photo-item" data-index="81" onclick="openLightbox(81)"><img src="photos/thumbs/FEB5848D-2746-4318-AFF3-32E9D47277D5.jpeg" srcset="photos/FEB5848D-2746-4318-AFF3-32E9D47277D5.jpeg 2x" alt="" loading="lazy"></div>
+  </div>
+</section>
+<footer><div class="ft">ORGIL.</div><div class="fc">&copy; 2025</div></footer>
+<div id="lb">
+  <button class="lbtn" id="lb-x">&#10005;</button>
+  <button class="lbtn" id="lb-p">&#8592;</button>
+  <button class="lbtn" id="lb-n">&#8594;</button>
+  <img src="" alt="" id="lb-img">
+  <div id="lb-num"></div>
+</div>
+<script>
+const P=[
+  "photos/0B69547C-EFE5-4702-943F-DDA004B3F6CA.jpeg",
+  "photos/0C4848EC-03F2-4D73-8766-55F99B7CC821.jpeg",
+  "photos/0EBA638A-26FA-4715-9995-3F1EA4EEAD9E.jpeg",
+  "photos/118A6717-A502-4AF8-B296-2F47D148B6AE.jpeg",
+  "photos/160F83D9-88F4-41E1-9024-568C9B9237DA.jpeg",
+  "photos/170D4ED7-2613-42E9-83E5-113F0824623C.jpeg",
+  "photos/179A8CF8-D41E-48BB-AD32-A2DD986AE030.jpeg",
+  "photos/1DE7F214-641B-4D0A-A93F-D21D16FC182B.jpeg",
+  "photos/1E61F92E-6695-4F68-8099-C4FF6E284670.jpeg",
+  "photos/23B86538-60B8-4BF3-95CF-7BAF13DE0148.jpeg",
+  "photos/248EDF71-54DD-4BC4-977C-93DFE27F3B73.jpeg",
+  "photos/264ABC2F-841E-4BB3-82DC-EAE1FF0F7C3D.jpeg",
+  "photos/27C3565E-C062-4FBF-ACB4-C271C91306A0.jpeg",
+  "photos/3C554525-03FA-4EBB-8C34-642B88E888AD.jpeg",
+  "photos/3CAE7B85-6405-422F-B957-E9DC09D21781.jpeg",
+  "photos/42567499-7F26-422D-A937-BA75E3D2164E.jpeg",
+  "photos/43A37D3E-0271-46F9-AD72-D98C1944C993.jpeg",
+  "photos/4CE6699E-B174-4481-A65D-76160086416A.jpeg",
+  "photos/4CEE4D48-D05E-4040-89C0-39B293DB94AF.jpeg",
+  "photos/4D4B9D12-7FCD-4093-A16B-69042D8B242D.jpeg",
+  "photos/4E05C40B-EBDE-422C-A423-EC688833A90A.jpeg",
+  "photos/4E28ABD5-C690-46AC-A13D-5857D81CEC7F.jpeg",
+  "photos/4FE22E1E-F464-4735-A383-1D714AAFC828.jpeg",
+  "photos/50E3F92A-A26A-4C3A-AB4A-FD6F8FC3866C.jpg",
+  "photos/5665CC62-627D-4878-8EEC-875DBD7600B2.jpeg",
+  "photos/5730C1C5-8B25-4E3E-9432-C20A9390CA5F.jpeg",
+  "photos/59573DCD-EC26-4DB0-AFDB-051F7CEF3C68.jpeg",
+  "photos/5A189C15-60CC-474A-AB37-C982873502C2.jpeg",
+  "photos/5A65B691-300E-4169-A653-FA83CBCD7722.jpeg",
+  "photos/5B27F834-007A-4232-914A-343F85E339AB.jpeg",
+  "photos/5C6A0B23-2392-4352-9DA6-76E969F06AD9.jpeg",
+  "photos/5CE2C2B8-59DB-41D7-A0DA-085B7E1D663F.jpeg",
+  "photos/5FFF20BC-225A-4436-BC30-89CFDB1DCE32.jpeg",
+  "photos/605F480B-F44A-4F83-94F4-8078C3785FD9.jpeg",
+  "photos/623ECAF4-49D7-4F39-ADFC-9357C0A049FD.jpeg",
+  "photos/634F2701-0245-4D78-9035-6518EF9FF5BA.jpeg",
+  "photos/635FF1C9-2BBA-4626-9C4A-1E8656848DC5.jpeg",
+  "photos/774D5337-E131-436A-B596-DEEFABB86922.jpeg",
+  "photos/786B296F-10BE-49F7-8CA2-B6EB2CCC1D76.jpeg",
+  "photos/78BDCA77-AB5D-4319-B2FC-649ECEE50275.jpeg",
+  "photos/797916F7-8E2B-4A09-BD29-4F6403DF9D11.jpeg",
+  "photos/7C043201-74DF-4127-A154-FF2490F4A1C8.jpeg",
+  "photos/7D492874-2A52-451B-A843-D67F654DE5CF.jpeg",
+  "photos/80AE4F49-E11E-4878-9E1F-0CD54CA82BE9.jpeg",
+  "photos/835E2021-394E-4F84-AC77-CD8C4451E3B9.jpeg",
+  "photos/8BCF9927-B28D-4E84-A1D1-0D1A6E78F47D.jpeg",
+  "photos/93393135-B240-4212-B236-3FB78944E50D.jpeg",
+  "photos/935E7005-D732-47F9-8D99-627AD1891636.jpeg",
+  "photos/A0903AA1-8979-4ABE-AAD3-0BEF4188637F.jpg",
+  "photos/A27B1B83-3AA6-4720-B4B2-ACC3941FB04D.jpeg",
+  "photos/A27D107A-511A-4E9C-B8E6-751E15C85CF7.jpeg",
+  "photos/AE4D7B1D-DCAD-4708-85A1-D00E806D5E0B.jpeg",
+  "photos/B30F9EAB-49A4-4A89-94F6-F0B846B26747.jpeg",
+  "photos/B7935DCF-60D3-48A0-9B0E-9721D19FFB59.jpeg",
+  "photos/BAB8EFDE-8BAE-4AE7-AC78-BDF2EACCD140.jpeg",
+  "photos/BF5DC6AF-802D-4650-B8C0-8B77504781FF.jpeg",
+  "photos/C01ED6A3-702E-4C3F-94FB-B44AD976516C.jpeg",
+  "photos/C11DC73C-D8AF-4121-9913-E18232283555.jpg",
+  "photos/C24C7038-0B8B-4807-9899-E6252FC3AC9B.jpeg",
+  "photos/C4720F34-6608-4259-B554-51E929977298.jpeg",
+  "photos/C4CFE873-28EB-450E-A000-70680F280275.jpeg",
+  "photos/C629D79D-5C2E-4A2E-8628-AD19B42B48CC.jpeg",
+  "photos/C6945928-E8CF-4D2A-A382-5BCF60D70A86.jpeg",
+  "photos/C92E4997-CBF9-40C8-BB1F-73201269DC54.jpeg",
+  "photos/CBDAB193-1948-4870-8933-F528C1F0DC69.jpeg",
+  "photos/CF3A8F50-A958-4D33-9C04-3FE8C93B889B.jpeg",
+  "photos/D0B59C63-36D4-43E4-95B6-2C739DEDA4F9.jpeg",
+  "photos/D9C4FDC5-140A-46A3-8944-4BFB1107B424.jpeg",
+  "photos/DCB90A15-506D-4D3F-AA07-8CDC43EA3A20.jpeg",
+  "photos/DCDA0DA5-A907-40B3-8204-D312E35D56F8.jpeg",
+  "photos/E0D24E34-B6AB-4533-84BB-794F8D3F8007.jpeg",
+  "photos/EAC47E05-1F3F-475B-9301-0F1FA68C2BE2.jpeg",
+  "photos/EB77B21E-140B-4AB0-B93D-F384D4E96B83.jpg",
+  "photos/EBE648E1-2E9D-4E8C-AE43-CB2C6F3859A0.jpeg",
+  "photos/ECEAA845-E1E0-4C30-9B74-D042C1EA41D8.jpeg",
+  "photos/EE1191D5-39B1-4566-BE8E-6DC0EF36D352.jpeg",
+  "photos/F33F315D-B3BC-4017-890B-CE9714208BB5.jpeg",
+  "photos/F6523666-6880-4BB9-92B2-DD23A0A70A3A.jpeg",
+  "photos/F8AABAD5-AAAE-4F1C-BED1-70699045DB02.jpeg",
+  "photos/F92E5BF4-18F0-4E2D-B3E6-E56C6ADBA40E.jpeg",
+  "photos/FD03A818-0367-41FE-9D25-8CC2A535DD26.jpeg",
+  "photos/FEB5848D-2746-4318-AFF3-32E9D47277D5.jpeg"
+];
+// 高清预加载（灯箱专用，屏幕宽度>768时预加载当前图前后各3张）
+function preloadHD(idx) {
+  for (let d = -3; d <= 3; d++) {
+    if (d === 0) continue;
+    const i = (idx + d + P.length) % P.length;
+    const link = document.createElement('link');
+    link.rel = 'preload'; link.as = 'image'; link.href = P[i];
+    document.head.appendChild(link);
+  }
+}
+document.getElementById('nc').textContent=P.length+' 张';
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('out'),1600));
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('s',scrollY>50));
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('in'),(+e.target.dataset.index%3)*60)}),{threshold:.05});
+document.querySelectorAll('.photo-item').forEach(el=>obs.observe(el));
+let cur=0;
+function openLightbox(i){
+  cur=i;
+  const img=document.getElementById('lb-img');
+  img.src=P[cur];
+  document.getElementById('lb-num').textContent=(cur+1)+' / '+P.length;
+  document.getElementById('lb').classList.add('open');
+  document.body.style.overflow='hidden';
+  preloadHD(cur);
+}
+function closeLb(){document.getElementById('lb').classList.remove('open');document.body.style.overflow=''}
+function nav(d){
+  cur=(cur+d+P.length)%P.length;
+  const img=document.getElementById('lb-img');
+  img.classList.add('fade');
+  setTimeout(()=>{img.src=P[cur];img.classList.remove('fade');document.getElementById('lb-num').textContent=(cur+1)+' / '+P.length;preloadHD(cur)},150);
+}
+document.getElementById('lb-x').onclick=closeLb;
+document.getElementById('lb-p').onclick=()=>nav(-1);
+document.getElementById('lb-n').onclick=()=>nav(1);
+document.getElementById('lb').addEventListener('click',e=>{if(e.target===document.getElementById('lb'))closeLb()});
+document.addEventListener('keydown',e=>{if(!document.getElementById('lb').classList.contains('open'))return;if(e.key==='Escape')closeLb();if(e.key==='ArrowLeft')nav(-1);if(e.key==='ArrowRight')nav(1)});
+</script>
+</body>
+</html>

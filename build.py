@@ -1,0 +1,166 @@
+import os, subprocess
+
+PHOTO_DIR = '/Users/orgil/WorkBuddy/Claw/portfolio/photos'
+THUMB_DIR = '/Users/orgil/WorkBuddy/Claw/portfolio/photos/thumbs'
+OUT = '/Users/orgil/WorkBuddy/Claw/portfolio/index.html'
+THUMB_W = 600  # 缩略图宽度（像素）
+
+os.makedirs(THUMB_DIR, exist_ok=True)
+
+files = sorted([f for f in os.listdir(PHOTO_DIR)
+                if f.endswith(('.jpeg', '.jpg', '.png')) and not f.startswith('.')])
+
+# 生成缩略图（已有则跳过）
+generated = 0
+for f in files:
+    thumb_path = os.path.join(THUMB_DIR, f)
+    if not os.path.exists(thumb_path):
+        src = os.path.join(PHOTO_DIR, f)
+        subprocess.run(['sips', src, '--resampleWidth', str(THUMB_W),
+                        '--out', thumb_path], check=True)
+        generated += 1
+
+print(f"缩略图: {generated} 个新生成, {len(files)} 个总计")
+
+# 生成 HTML
+photo_divs = '\n'.join([
+    f'    <div class="photo-item" data-index="{i}" onclick="openLightbox({i})">'
+    f'<img src="photos/thumbs/{f}" srcset="photos/{f} 2x" alt="" loading="lazy"></div>'
+    for i, f in enumerate(files)
+])
+
+photos_js = ',\n  '.join([f'"photos/{f}"' for f in files])
+
+html = '''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>烂片王中王 · ORGIL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Inter:wght@300&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#080808;--text:#d8d4cc;--dim:#5a5650;--gold:#c9a96e}
+    body{background:var(--bg);color:var(--text);font-family:"Inter",sans-serif;font-weight:300;overflow-x:hidden}
+    #loader{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .8s,visibility .8s}
+    #loader.out{opacity:0;visibility:hidden}
+    .ld-t{font-family:"Cormorant Garamond",serif;font-size:24px;letter-spacing:.3em;color:var(--text)}
+    .ld-t em{color:var(--gold);font-style:italic}
+    .ld-b{width:100px;height:1px;background:#1a1a1a;position:relative;overflow:hidden}
+    .ld-b::after{content:"";position:absolute;top:0;left:-100%;width:100%;height:1px;background:var(--gold);animation:lb 1.5s ease forwards}
+    @keyframes lb{to{left:0}}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:24px 40px;background:linear-gradient(to bottom,rgba(8,8,8,.9) 0%,transparent 100%);transition:all .4s}
+    nav.s{background:rgba(8,8,8,.96);backdrop-filter:blur(16px);padding:16px 40px}
+    .nl{font-family:"Cormorant Garamond",serif;font-size:17px;letter-spacing:.18em;color:var(--text);text-decoration:none}
+    .nl em{color:var(--gold);font-style:italic}
+    .nn{font-size:10px;letter-spacing:.15em;color:var(--dim)}
+    #hero{height:100vh;display:flex;align-items:flex-end;padding:0 40px 64px;position:relative;overflow:hidden}
+    .hbg{position:absolute;inset:0;background:linear-gradient(160deg,#100e0b 0%,#080808 60%)}
+    .hf{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.98) 0%,rgba(8,8,8,.3) 50%,transparent 100%)}
+    .ht{position:relative;z-index:2}
+    .hl{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;opacity:0;animation:up .8s .4s forwards;transform:translateY(20px)}
+    .hh{font-family:"Cormorant Garamond",serif;font-size:clamp(48px,8vw,88px);font-weight:300;line-height:1.05;color:#fff;margin-bottom:18px;opacity:0;animation:up .8s .6s forwards;transform:translateY(20px)}
+    .hh em{font-style:italic;color:var(--gold)}
+    .hs{font-size:12px;letter-spacing:.1em;color:var(--dim);opacity:0;animation:up .8s .8s forwards;transform:translateY(20px)}
+    @keyframes up{to{opacity:1;transform:none}}
+    #gallery{padding:40px 28px 80px}
+    .masonry{columns:3;column-gap:8px}
+    @media(max-width:900px){.masonry{columns:2}}
+    @media(max-width:560px){.masonry{columns:1}}
+    .photo-item{break-inside:avoid;margin-bottom:8px;overflow:hidden;cursor:zoom-in;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+    .photo-item.in{opacity:1;transform:none}
+    .photo-item img{display:block;width:100%;height:auto;transition:transform .6s cubic-bezier(.25,.46,.45,.94),filter .4s,opacity .4s;filter:brightness(.88) saturate(.95)}
+    .photo-item img.loaded{filter:brightness(1) saturate(1.05)}
+    .photo-item:hover img{transform:scale(1.03)}
+    #lb{position:fixed;inset:0;z-index:1000;background:rgba(5,5,5,.97);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s}
+    #lb.open{opacity:1;pointer-events:all}
+    #lb-img{max-width:90vw;max-height:88vh;object-fit:contain;display:block;transform:scale(.96);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .15s}
+    #lb.open #lb-img{transform:scale(1)}
+    #lb-img.fade{opacity:0}
+    .lbtn{position:fixed;background:none;border:1px solid rgba(255,255,255,.1);color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;font-size:16px}
+    .lbtn:hover{border-color:var(--gold);color:var(--gold)}
+    #lb-x{top:24px;right:32px;width:40px;height:40px;border-radius:50%}
+    #lb-p{left:16px;top:50%;transform:translateY(-50%);width:44px;height:44px}
+    #lb-n{right:16px;top:50%;transform:translateY(-50%);width:44px;height:44px}
+    #lb-num{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.2em;color:var(--dim)}
+    footer{padding:28px 40px;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between}
+    .ft{font-family:"Cormorant Garamond",serif;font-size:14px;color:var(--dim)}
+    .fc{font-size:11px;color:var(--dim);opacity:.4}
+  </style>
+</head>
+<body>
+<div id="loader"><div class="ld-t">烂片<em>王中王</em></div><div class="ld-b"></div></div>
+<nav id="nav">
+  <a href="#" class="nl">ORGIL &middot; <em>烂片王中王</em></a>
+  <span class="nn" id="nc">— 张</span>
+</nav>
+<section id="hero">
+  <div class="hbg"></div><div class="hf"></div>
+  <div class="ht">
+    <p class="hl">摄影 &middot; Photography</p>
+    <h1 class="hh">烂片<br><em>王中王</em></h1>
+    <p class="hs">ORGIL &middot; 那些没打算好看的瞬间</p>
+  </div>
+</section>
+<section id="gallery">
+  <div class="masonry" id="masonry">
+''' + photo_divs + '''
+  </div>
+</section>
+<footer><div class="ft">ORGIL.</div><div class="fc">&copy; 2025</div></footer>
+<div id="lb">
+  <button class="lbtn" id="lb-x">&#10005;</button>
+  <button class="lbtn" id="lb-p">&#8592;</button>
+  <button class="lbtn" id="lb-n">&#8594;</button>
+  <img src="" alt="" id="lb-img">
+  <div id="lb-num"></div>
+</div>
+<script>
+const P=[
+  ''' + photos_js + '''
+];
+// 高清预加载（灯箱专用，屏幕宽度>768时预加载当前图前后各3张）
+function preloadHD(idx) {
+  for (let d = -3; d <= 3; d++) {
+    if (d === 0) continue;
+    const i = (idx + d + P.length) % P.length;
+    const link = document.createElement('link');
+    link.rel = 'preload'; link.as = 'image'; link.href = P[i];
+    document.head.appendChild(link);
+  }
+}
+document.getElementById('nc').textContent=P.length+' 张';
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('out'),1600));
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('s',scrollY>50));
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('in'),(+e.target.dataset.index%3)*60)}),{threshold:.05});
+document.querySelectorAll('.photo-item').forEach(el=>obs.observe(el));
+let cur=0;
+function openLightbox(i){
+  cur=i;
+  const img=document.getElementById('lb-img');
+  img.src=P[cur];
+  document.getElementById('lb-num').textContent=(cur+1)+' / '+P.length;
+  document.getElementById('lb').classList.add('open');
+  document.body.style.overflow='hidden';
+  preloadHD(cur);
+}
+function closeLb(){document.getElementById('lb').classList.remove('open');document.body.style.overflow=''}
+function nav(d){
+  cur=(cur+d+P.length)%P.length;
+  const img=document.getElementById('lb-img');
+  img.classList.add('fade');
+  setTimeout(()=>{img.src=P[cur];img.classList.remove('fade');document.getElementById('lb-num').textContent=(cur+1)+' / '+P.length;preloadHD(cur)},150);
+}
+document.getElementById('lb-x').onclick=closeLb;
+document.getElementById('lb-p').onclick=()=>nav(-1);
+document.getElementById('lb-n').onclick=()=>nav(1);
+document.getElementById('lb').addEventListener('click',e=>{if(e.target===document.getElementById('lb'))closeLb()});
+document.addEventListener('keydown',e=>{if(!document.getElementById('lb').classList.contains('open'))return;if(e.key==='Escape')closeLb();if(e.key==='ArrowLeft')nav(-1);if(e.key==='ArrowRight')nav(1)});
+</script>
+</body>
+</html>'''
+
+with open(OUT, 'w') as f:
+    f.write(html)
+
+print(f"OK: {len(files)} 张照片，HTML {len(html)//1024}KB")
