@@ -321,7 +321,7 @@ body {
 // ── Config ──
 const PASS_HASH = '2a3d253e5273a3e67096224cca77d84c7fc096b0515320989df59d4b177636fe';
 const IMGBB_KEY = '454a453fc00876d805dd9b1a505db101';
-const GH_TOKEN = localStorage.getItem('gh_token') || '';
+const GH_TOKEN = '3Cip6qlBexjosiIK3Z57I4TNedT';
 const GH_USER = 'aorigele5815';
 const GH_REPO = 'photo-portfolio';
 const GH_BRANCH = 'main';
@@ -417,7 +417,7 @@ async function uploadImgBB(file) {
 
 // ── Photos list ──
 async function loadPhotoList() {
-  if (!GH_TOKEN) { toast('请先配置 GitHub Token', 'error'); return []; }
+  // token hardcoded
   try {
     const r = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}&t=${Date.now()}`);
     return JSON.parse(atob(r.content));
