@@ -48,27 +48,12 @@ body {
   letter-spacing: 1px;
   transition: all 0.3s;
   cursor: pointer;
+  background: none;
+  font-family: inherit;
 }
 .nav a.btn:hover { background: var(--gold); color: var(--bg); }
-.sync-btn {
-  border-color: var(--success) !important;
-  color: var(--success) !important;
-}
-.sync-btn:hover { background: var(--success) !important; color: var(--bg) !important; }
-.sync-btn.syncing {
-  opacity: 0.6;
-  pointer-events: none;
-}
-.sync-btn .spin-dot {
-  display: inline-block;
-  width: 10px; height: 10px;
-  border: 2px solid var(--success);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle;
-  margin-right: 6px;
-}
+
+/* ── 登录 ── */
 #login-view {
   display: flex;
   flex-direction: column;
@@ -129,7 +114,6 @@ body {
   letter-spacing: 3px;
   cursor: pointer;
   transition: background 0.3s;
-  margin-bottom: 12px;
 }
 .login-box button:hover { background: var(--gold2); }
 .login-box .error {
@@ -138,8 +122,76 @@ body {
   text-align: center;
   min-height: 20px;
   letter-spacing: 1px;
+  margin-top: 8px;
 }
+
+/* ── 管理后台 ── */
 #admin-view { display: none; padding: 40px; }
+
+/* Token 设置 */
+.token-bar {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin-bottom: 30px;
+}
+.token-bar h3 {
+  color: var(--gold);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+  font-weight: 400;
+}
+.token-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.token-row label {
+  color: var(--text2);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  width: 100px;
+  flex-shrink: 0;
+}
+.token-row input {
+  flex: 1;
+  min-width: 200px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  outline: none;
+}
+.token-row input:focus { border-color: var(--gold); }
+.token-row .save-btn {
+  padding: 8px 16px;
+  background: var(--gold);
+  border: none;
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.token-row .save-btn:hover { background: var(--gold2); }
+.token-row .tip {
+  font-size: 0.7rem;
+  color: var(--text2);
+  width: 100%;
+  margin-left: 100px;
+}
+.token-saved {
+  color: var(--success);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  margin-left: 8px;
+}
+
 .section-title {
   font-size: 1.1rem;
   color: var(--gold);
@@ -270,6 +322,22 @@ body {
   letter-spacing: 2px;
   text-transform: uppercase;
 }
+.sync-btn {
+  border-color: var(--success) !important;
+  color: var(--success) !important;
+}
+.sync-btn:hover { background: var(--success) !important; color: var(--bg) !important; }
+.sync-btn.syncing { opacity: 0.6; pointer-events: none; }
+.sync-btn .spin-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 2px solid var(--success);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
 </style>
 </head>
 <body>
@@ -282,29 +350,58 @@ body {
     <a class="btn" onclick="logout()">退出</a>
   </div>
 </nav>
+
 <!-- 登录页 -->
 <div id="login-view">
   <h1>管理后台</h1>
   <p class="sub">PORTFOLIO ADMIN</p>
   <div class="login-box">
     <label>口 令</label>
-    <input type="password" id="pw-input" placeholder="••••" autocomplete="off">
+    <input type="password" id="pw-input" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkLogin()">
     <button onclick="checkLogin()">进 入</button>
     <div class="error" id="login-error"></div>
   </div>
 </div>
 
+<!-- 管理后台 -->
 <div id="admin-view">
   <div class="stats-bar">
     <div class="stat"><div class="num" id="stat-total">–</div><div class="label">全部照片</div></div>
   </div>
+
+  <!-- Token 设置 -->
+  <div class="token-bar">
+    <h3>API TOKEN</h3>
+    <div class="token-row">
+      <label>GitHub PAT</label>
+      <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxx" autocomplete="off">
+      <button class="save-btn" onclick="saveToken('gh')">保存</button>
+    </div>
+    <div class="token-row">
+      <label>CF API Token</label>
+      <input type="password" id="cf-token-input" placeholder="cfut_xxxxxxxx" autocomplete="off">
+      <button class="save-btn" onclick="saveToken('cf')">保存</button>
+    </div>
+    <div class="token-row">
+      <label>CF Global Key</label>
+      <input type="password" id="cf-key-input" placeholder="cfk_xxxxxxxx" autocomplete="off">
+      <button class="save-btn" onclick="saveToken('cfkey')">保存</button>
+    </div>
+    <div class="token-row">
+      <label>CF 邮箱</label>
+      <input type="email" id="cf-email-input" placeholder="your@email.com" autocomplete="off">
+      <button class="save-btn" onclick="saveToken('cfemail')">保存</button>
+    </div>
+  </div>
+
   <p class="section-title">添 加 照 片</p>
   <div class="upload-area" id="upload-area">
     <div class="icon">+</div>
     <p>点击或拖拽上传照片</p>
-    <p class="tip">支持 JPG / JPEG / PNG / WEBP，添加后自动部署</p>
+    <p class="tip">支持 JPG / JPEG / PNG / WEBP</p>
     <input type="file" id="file-input" accept="image/*" multiple>
   </div>
+
   <p class="section-title">管 理 照 片</p>
   <div class="photo-grid" id="photo-grid"></div>
 </div>
@@ -321,11 +418,16 @@ body {
 // ── Config ──
 const PASS_HASH = '2a3d253e5273a3e67096224cca77d84c7fc096b0515320989df59d4b177636fe';
 const IMGBB_KEY = '454a453fc00876d805dd9b1a505db101';
-const GH_TOKEN = '3Cip6qlBexjosiIK3Z57I4TNedT';
 const GH_USER = 'aorigele5815';
 const GH_REPO = 'photo-portfolio';
 const GH_BRANCH = 'main';
 const GH_PHOTOS_FILE = 'photos.json';
+const CF_ACCOUNT_ID = '38b114fc42e8ef8c31f49eda5bc2fec0';
+
+function ghToken() { return localStorage.getItem('gh_token') || ''; }
+function cfToken() { return localStorage.getItem('cf_token') || ''; }
+function cfKey()   { return localStorage.getItem('cf_key')   || ''; }
+function cfEmail() { return localStorage.getItem('cf_email') || ''; }
 
 // ── Utils ──
 function sha256(str) {
@@ -333,16 +435,12 @@ function sha256(str) {
     .then(buf => Array.from(new Uint8Array(buf)))
     .then(arr => arr.map(b => b.toString(16).padStart(2,'0')).join(''));
 }
-
-async function hashPass(pw) { return await sha256(pw); }
-
 function toast(msg, type='normal') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast show' + (type !== 'normal' ? ' '+type : '');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
-
 function showOverlay(msg, detail='') {
   document.getElementById('uploading-overlay').style.display = 'flex';
   document.getElementById('upload-msg').textContent = msg;
@@ -353,11 +451,12 @@ function hideOverlay() { document.getElementById('uploading-overlay').style.disp
 // ── Auth ──
 async function checkLogin() {
   const pw = document.getElementById('pw-input').value;
-  const hash = await hashPass(pw);
+  const hash = await sha256(pw);
   if (hash !== PASS_HASH) { document.getElementById('login-error').textContent = '口令错误'; return; }
   sessionStorage.setItem('logged_in', '1');
   document.getElementById('login-view').style.display = 'none';
   document.getElementById('admin-view').style.display = 'block';
+  loadTokenInputs();
   loadPhotos();
 }
 
@@ -366,26 +465,36 @@ function logout() {
   location.reload();
 }
 
-// Auto-run: password only, token pre-configured
-(function init() {
-  if (sessionStorage.getItem('logged_in') === '1') {
-    document.getElementById('login-view').style.display = 'none';
-    document.getElementById('admin-view').style.display = 'block';
-    loadPhotos();
-  } else {
-    document.getElementById('login-view').style.display = 'flex';
+// ── Token 管理 ──
+function loadTokenInputs() {
+  document.getElementById('gh-token-input').value   = ghToken();
+  document.getElementById('cf-token-input').value   = cfToken();
+  document.getElementById('cf-key-input').value     = cfKey();
+  document.getElementById('cf-email-input').value  = cfEmail();
+}
+function saveToken(type) {
+  if (type === 'gh') {
+    const v = document.getElementById('gh-token-input').value.trim();
+    if (v && !v.startsWith('ghp_')) { toast('GitHub PAT 必须以 ghp_ 开头', 'error'); return; }
+    localStorage.setItem('gh_token', v);
+  } else if (type === 'cf') {
+    localStorage.setItem('cf_token', document.getElementById('cf-token-input').value.trim());
+  } else if (type === 'cfkey') {
+    localStorage.setItem('cf_key', document.getElementById('cf-key-input').value.trim());
+  } else if (type === 'cfemail') {
+    localStorage.setItem('cf_email', document.getElementById('cf-email-input').value.trim());
   }
-})();
+  toast('已保存', 'success');
+}
 
 // ── GitHub API ──
 function ghHeaders() {
   return {
-    'Authorization': 'token ' + GH_TOKEN,
+    'Authorization': 'token ' + ghToken(),
     'Accept': 'application/vnd.github.v3+json',
     'Content-Type': 'application/json'
   };
 }
-
 async function ghApi(method, path, data) {
   const res = await fetch('https://api.github.com' + path, {
     method,
@@ -394,7 +503,7 @@ async function ghApi(method, path, data) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `HTTP ${res.status}`);
+    throw new Error(err.message || 'HTTP ' + res.status);
   }
   return res.json();
 }
@@ -415,11 +524,12 @@ async function uploadImgBB(file) {
   });
 }
 
-// ── Photos list ──
+// ── Photos ──
 async function loadPhotoList() {
+  if (!ghToken()) { toast('请先填写 GitHub PAT', 'error'); return []; }
   try {
-    const r = await fetch(`https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/main/${GH_PHOTOS_FILE}?t=${Date.now()}`);
-    return await r.json();
+    const r = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}&t=${Date.now()}`);
+    return JSON.parse(atob(r.content));
   } catch { return []; }
 }
 
@@ -432,20 +542,28 @@ async function savePhotoList(list) {
     content: encoded,
     sha: existing.sha
   });
-  // 触发 Cloudflare Pages 重建
   await triggerCFDeploy();
 }
 
-const CF_ACCOUNT_ID = '38b114fc42e8ef8c31f49eda5bc2fec0';
 async function triggerCFDeploy() {
-  const cfKey = localStorage.getItem('cf_api_key');
-  const cfEmail = localStorage.getItem('cf_email');
-  if (!cfKey || !cfEmail) return;
+  const key = cfKey(), email = cfEmail(), token = cfToken();
+  if (!key || !email) return;
   try {
-    await fetch(`https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/photo-portfolio/deployments`, {
-      method: 'POST',
-      headers: { 'X-Auth-Email': cfEmail, 'X-Auth-Key': cfKey, 'Content-Type': 'application/json' }
-    });
+    // 优先用 CF API Token (wrangler)
+    if (token) {
+      await fetch(`https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${GH_REPO}/deployments`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ branch: 'main' })
+      });
+    } else {
+      // fallback: Global Key
+      await fetch(`https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${GH_REPO}/deployments`, {
+        method: 'POST',
+        headers: { 'X-Auth-Email': email, 'X-Auth-Key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ branch: 'main', kind: 'direct_upload' })
+      });
+    }
   } catch(e) { /* non-critical */ }
 }
 
@@ -473,7 +591,7 @@ async function loadPhotos() {
       card.querySelector('.del-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
         const name = p.name;
-        if (!confirm(`确认删除 ${name}？`)) return;
+        if (!confirm('确认删除 ' + name + '？')) return;
         showOverlay('正在删除...', name);
         try {
           const currentList = await loadPhotoList();
@@ -482,7 +600,6 @@ async function loadPhotos() {
           toast('已删除: ' + name, 'success');
           await loadPhotos();
         } catch(err) {
-          console.error('Delete error:', err);
           toast('删除失败: ' + err.message, 'error');
         } finally {
           hideOverlay();
@@ -490,13 +607,47 @@ async function loadPhotos() {
       });
     });
   } catch(err) {
-    grid.innerHTML = `<p style="color:var(--danger);grid-column:1/-1;text-align:center;padding:40px">加载失败: ${err.message}</p>`;
+    grid.innerHTML = '<p style="color:var(--danger);grid-column:1/-1;text-align:center;padding:40px">加载失败</p>';
+  }
+}
+
+// ── Upload ──
+const uploadArea = document.getElementById('upload-area');
+const fileInput = document.getElementById('file-input');
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+async function handleFiles(files) {
+  if (!files.length) return;
+  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) { toast('仅支持图片格式', 'error'); return; }
+  if (!ghToken()) { toast('请先填写 GitHub PAT', 'error'); return; }
+  showOverlay('准备上传...', imgs.length + ' 个文件');
+  try {
+    const list = await loadPhotoList();
+    const newEntries = [];
+    for (let i = 0; i < imgs.length; i++) {
+      const f = imgs[i];
+      showOverlay('上传中 ' + (i+1) + '/' + imgs.length, f.name);
+      const result = await uploadImgBB(f);
+      newEntries.push({ name: f.name, url: result.url, thumb: result.thumb?.url || result.url, time: Date.now() });
+    }
+    const merged = [...newEntries, ...list];
+    showOverlay('保存列表...', '');
+    await savePhotoList(merged);
+    toast('上传成功 ' + newEntries.length + ' 个文件', 'success');
+    await loadPhotos();
+  } catch(err) {
+    toast('上传失败: ' + err.message, 'error');
+  } finally {
+    hideOverlay();
+    fileInput.value = '';
   }
 }
 
 // ── Sync ──
-const CF_ACCOUNT_ID = '38b114fc42e8ef8c31f49eda5bc2fec0';
-
 function setSyncBtnState(loading) {
   const btn = document.getElementById('sync-btn');
   if (!btn) return;
@@ -510,35 +661,25 @@ function setSyncBtnState(loading) {
 }
 
 async function doSync() {
-  if (!GH_TOKEN) { toast('请先配置 GitHub Token', 'error'); return; }
+  if (!ghToken()) { toast('请先填写 GitHub PAT', 'error'); return; }
   setSyncBtnState(true);
-  showOverlay('正在同步...', '获取 GitHub 数据');
+  showOverlay('同步中...', '获取 GitHub 数据');
   try {
-    // 1. 获取 photos.json 和 index.html 的 SHA
-    const [photosRes, indexRes] = await Promise.all([
-      ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`),
-      ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/index.html?ref=${GH_BRANCH}`)
+    const [photosRes] = await Promise.all([
+      ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`)
     ]);
-
-    // 2. 拉取最新的 photos.json 内容
     const photosContent = JSON.parse(atob(photosRes.content));
     const photosEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(photosContent, null, 2))));
-
     showOverlay('同步中...', '推送 photos.json');
-    // 3. 推送 photos.json
     await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
-      message: `Sync photos (${photosContent.length} photos)`,
+      message: 'Sync photos (' + photosContent.length + ' photos)',
       content: photosEncoded,
       sha: photosRes.sha
     });
-
-    // 4. 触发 Cloudflare Pages 部署
     showOverlay('同步中...', '触发 CF Pages 部署');
     await triggerCFDeploy();
-
-    toast(`同步完成，共 ${photosContent.length} 张照片`, 'success');
+    toast('同步完成，共 ' + photosContent.length + ' 张照片', 'success');
   } catch(err) {
-    console.error('Sync error:', err);
     toast('同步失败: ' + err.message, 'error');
   } finally {
     setSyncBtnState(false);
@@ -546,40 +687,17 @@ async function doSync() {
   }
 }
 
-
-const uploadArea = document.getElementById('upload-area');
-const fileInput = document.getElementById('file-input');
-uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-fileInput.addEventListener('change', e => handleFiles(e.target.files));
-
-async function handleFiles(files) {
-  if (!files.length) return;
-  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
-  if (!imgs.length) { toast('仅支持图片格式', 'error'); return; }
-  showOverlay('准备上传...', `${imgs.length} 个文件`);
-  try {
-    const list = await loadPhotoList();
-    const newEntries = [];
-    for (let i = 0; i < imgs.length; i++) {
-      const f = imgs[i];
-      showOverlay(`上传中 ${i+1}/${imgs.length}`, f.name);
-      const result = await uploadImgBB(f);
-      newEntries.push({ name: f.name, url: result.url, thumb: result.thumb?.url || result.url, time: Date.now() });
-    }
-    const merged = [...newEntries, ...list];
-    showOverlay('保存列表...', '');
-    await savePhotoList(merged);
-    toast(`上传成功 ${newEntries.length} 个文件`, 'success');
-    await loadPhotos();
-  } catch(err) {
-    toast('上传失败: ' + err.message, 'error');
-  } finally {
-    hideOverlay();
-    fileInput.value = '';
+// ── Init ──
+(function init() {
+  if (sessionStorage.getItem('logged_in') === '1') {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('admin-view').style.display = 'block';
+    loadTokenInputs();
+    loadPhotos();
+  } else {
+    document.getElementById('login-view').style.display = 'flex';
   }
-}
+})();
 </script>
 </body>
 </html>
