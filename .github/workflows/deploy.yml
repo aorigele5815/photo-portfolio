@@ -8,19 +8,26 @@ on:
       - 'photos.json'
       - 'index.html'
       - 'admin.html'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy via Cloudflare Pages API
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Configure wrangler
+        run: |
+          mkdir -p ~/.config/.wrangler
+          cat > ~/.config/.wrangler/config.toml << 'TOML'
+[defaults]
+account_id = "38b114fc42e8ef8c31f49eda5bc2fec0"
+TOML
+      - name: Install Wrangler & Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          ACCOUNT_ID="38b114fc42e8ef8c31f49eda5bc2fec0"
-          curl -s -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/photo-portfolio/deployments" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{"branch":"main","production":true}'
+          npm install -g wrangler
+          wrangler pages deploy . --project-name=photo-portfolio --commit-message="Deploy from GitHub Actions"
