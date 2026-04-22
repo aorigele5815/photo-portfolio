@@ -90,7 +90,7 @@ async function loadGallery() {
   const loader = document.getElementById('gallery-loader');
   const masonry = document.getElementById('masonry');
   try {
-    const r = await fetch('photos.json');
+    const r = await fetch('photos.json?t=' + Date.now());
     if (!r.ok) throw new Error('photos.json not found');
     P = await r.json();
     document.getElementById('nc').textContent = P.length + ' 张';
