@@ -31,3 +31,5 @@ TOML
         run: |
           npm install -g wrangler
           wrangler pages deploy . --project-name=photo-portfolio
+
+# Trigger update
