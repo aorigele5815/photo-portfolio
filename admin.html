@@ -18,14 +18,12 @@
   --success: #27ae60;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Cormorant Garamond', serif;
   min-height: 100vh;
 }
-
 .nav {
   display: flex;
   align-items: center;
@@ -52,8 +50,6 @@ body {
   cursor: pointer;
 }
 .nav a.btn:hover { background: var(--gold); color: var(--bg); }
-
-/* ── Login ── */
 #login-view {
   display: flex;
   flex-direction: column;
@@ -124,8 +120,6 @@ body {
   min-height: 20px;
   letter-spacing: 1px;
 }
-
-/* ── Admin ── */
 #admin-view { display: none; padding: 40px; }
 .section-title {
   font-size: 1.1rem;
@@ -134,12 +128,7 @@ body {
   margin-bottom: 20px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
-
-/* Upload area */
 .upload-area {
   border: 2px dashed var(--border);
   padding: 40px;
@@ -162,8 +151,6 @@ body {
 .upload-area .icon { font-size: 2rem; margin-bottom: 12px; }
 .upload-area p { color: var(--text2); font-size: 0.9rem; letter-spacing: 1px; }
 .upload-area .tip { font-size: 0.75rem; margin-top: 8px; }
-
-/* Photo grid */
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -204,7 +191,6 @@ body {
 }
 .photo-card:hover .del-btn { opacity: 1; }
 .photo-card .del-btn:hover { background: var(--danger); color: #fff; }
-
 .uploading-overlay {
   position: fixed;
   inset: 0;
@@ -226,7 +212,6 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 .uploading-overlay p { color: var(--gold); letter-spacing: 2px; font-size: 1.1rem; }
 .uploading-overlay .detail { color: var(--text2); font-size: 0.8rem; margin-top: 8px; }
-
 .toast {
   position: fixed;
   bottom: 30px;
@@ -245,7 +230,6 @@ body {
 .toast.show { opacity: 1; }
 .toast.success { border-color: var(--success); color: var(--success); }
 .toast.error { border-color: var(--danger); color: var(--danger); }
-
 .stats-bar {
   display: flex;
   gap: 30px;
@@ -279,8 +263,20 @@ body {
   </div>
 </nav>
 
+<!-- Token 配置 -->
+<div id="token-view">
+  <h1>管理后台</h1>
+  <p class="sub">PORTFOLIO ADMIN</p>
+  <div class="login-box">
+    <label>GitHub Token</label>
+    <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxx" autocomplete="off">
+    <button onclick="saveToken()">保 存</button>
+    <div class="error" id="token-error"></div>
+  </div>
+</div>
+
 <!-- 登录页 -->
-<div id="login-view">
+<div id="login-view" style="display:none">
   <h1>管理后台</h1>
   <p class="sub">PORTFOLIO ADMIN</p>
   <div class="login-box">
@@ -291,46 +287,38 @@ body {
   </div>
 </div>
 
-<!-- 管理页 -->
 <div id="admin-view">
   <div class="stats-bar">
     <div class="stat"><div class="num" id="stat-total">–</div><div class="label">全部照片</div></div>
-    <div class="stat"><div class="num" id="stat-loaded">–</div><div class="label">已加载</div></div>
   </div>
-
   <p class="section-title">添 加 照 片</p>
   <div class="upload-area" id="upload-area">
     <div class="icon">+</div>
     <p>点击或拖拽上传照片</p>
-    <p class="tip">支持 JPG / JPEG / PNG，添加后自动部署</p>
-    <input type="file" id="file-input" accept="image/jpeg,image/jpg,image/png" multiple>
+    <p class="tip">支持 JPG / JPEG / PNG / WEBP，添加后自动部署</p>
+    <input type="file" id="file-input" accept="image/*" multiple>
   </div>
-
   <p class="section-title">管 理 照 片</p>
   <div class="photo-grid" id="photo-grid"></div>
 </div>
 
-<!-- 上传遮罩 -->
 <div class="uploading-overlay" id="uploading-overlay" style="display:none">
   <div class="spin"></div>
   <p id="upload-msg">正在上传...</p>
   <div class="detail" id="upload-detail"></div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
 // ── Config ──
-const USER = 'aorigele5815';
-const REPO = 'aorigele5815.github.io';
-const BRANCH = 'main';
-const PHOTO_DIR = 'portfolio/photos';
-const THUMB_DIR = 'portfolio/photos/thumbs';
 const PASS_HASH = '2a3d253e5273a3e67096224cca77d84c7fc096b0515320989df59d4b177636fe';
-const GH_TOKEN = 'YOUR_TOKEN_HERE';  // TODO: fill in your GitHub PAT
-const GITHUB_PAGES = 'https://aorigele5815.github.io';
-const THUMB_W = 600;
+const IMGBB_KEY = '454a453fc00876d805dd9b1a505db101';
+const GH_TOKEN = localStorage.getItem('gh_token') || '';
+const GH_USER = 'aorigele5815';
+const GH_REPO = 'photo-portfolio';
+const GH_BRANCH = 'main';
+const GH_PHOTOS_FILE = 'photos.json';
 
 // ── Utils ──
 function sha256(str) {
@@ -339,9 +327,7 @@ function sha256(str) {
     .then(arr => arr.map(b => b.toString(16).padStart(2,'0')).join(''));
 }
 
-async function hashPass(pw) {
-  return await sha256(pw);
-}
+async function hashPass(pw) { return await sha256(pw); }
 
 function toast(msg, type='normal') {
   const t = document.getElementById('toast');
@@ -355,22 +341,25 @@ function showOverlay(msg, detail='') {
   document.getElementById('upload-msg').textContent = msg;
   document.getElementById('upload-detail').textContent = detail;
 }
-function hideOverlay() {
-  document.getElementById('uploading-overlay').style.display = 'none';
-}
+function hideOverlay() { document.getElementById('uploading-overlay').style.display = 'none'; }
 
 // ── Auth ──
 async function checkLogin() {
   const pw = document.getElementById('pw-input').value;
   const hash = await hashPass(pw);
-  if (hash !== PASS_HASH) {
-    document.getElementById('login-error').textContent = '口令错误';
-    return;
-  }
+  if (hash !== PASS_HASH) { document.getElementById('login-error').textContent = '口令错误'; return; }
   sessionStorage.setItem('logged_in', '1');
   document.getElementById('login-view').style.display = 'none';
   document.getElementById('admin-view').style.display = 'block';
   loadPhotos();
+}
+
+function saveToken() {
+  const t = document.getElementById('token-input').value.trim();
+  if (!t.startsWith('ghp_')) { document.getElementById('token-error').textContent = 'Token 必须以 ghp_ 开头'; return; }
+  localStorage.setItem('gh_token', t);
+  document.getElementById('token-view').style.display = 'none';
+  document.getElementById('login-view').style.display = 'flex';
 }
 
 function logout() {
@@ -378,12 +367,23 @@ function logout() {
   location.reload();
 }
 
-// Auto-login check
-if (sessionStorage.getItem('logged_in') === '1') {
-  document.getElementById('login-view').style.display = 'none';
-  document.getElementById('admin-view').style.display = 'block';
-  loadPhotos();
-}
+// Auto-run: show appropriate screen
+(function init() {
+  const token = localStorage.getItem('gh_token');
+  if (!token) {
+    document.getElementById('token-view').style.display = 'flex';
+    document.getElementById('login-view').style.display = 'none';
+    return;
+  }
+  document.getElementById('token-view').style.display = 'none';
+  if (sessionStorage.getItem('logged_in') === '1') {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('admin-view').style.display = 'block';
+    loadPhotos();
+  } else {
+    document.getElementById('login-view').style.display = 'flex';
+  }
+})();
 
 // ── GitHub API ──
 function ghHeaders() {
@@ -407,92 +407,80 @@ async function ghApi(method, path, data) {
   return res.json();
 }
 
-async function uploadBlob(content) {
-  const b64 = btoa(Array.from(new Uint8Array(content))
-    .map(b => String.fromCharCode(b)).join(''));
-  return ghApi('POST', `/repos/${USER}/${REPO}/git/blobs`, {
-    content: b64,
-    encoding: 'base64'
+// ── ImgBB Upload ──
+async function uploadImgBB(file) {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append('image', file);
+    form.append('key', IMGBB_KEY);
+    fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: form })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) resolve(data.data);
+        else reject(new Error(data.error?.message || 'ImgBB上传失败'));
+      })
+      .catch(reject);
   });
 }
 
-async function getCurrentTree() {
-  const ref = await ghApi('GET', `/repos/${USER}/${REPO}/git/refs/heads/${BRANCH}`);
-  const commit = await ghApi('GET', `/repos/${USER}/${REPO}/git/commits/${ref.object.sha}`);
-  return commit.commit.tree.sha;
+// ── Photos list ──
+async function loadPhotoList() {
+  if (!GH_TOKEN) { toast('请先配置 GitHub Token', 'error'); return []; }
+  try {
+    const r = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
+    return JSON.parse(atob(r.content));
+  } catch { return []; }
 }
 
-async function getExistingFiles(dir) {
+async function savePhotoList(list) {
+  const content = JSON.stringify(list, null, 2);
+  const encoded = btoa(unescape(encodeURIComponent(content)));
   try {
-    const files = await ghApi('GET', `/repos/${USER}/${REPO}/contents/${dir}?ref=${BRANCH}`);
-    return Array.isArray(files) ? files : [];
+    const existing = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
+    await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
+      message: 'Update photos list',
+      content: encoded,
+      sha: existing.sha
+    });
   } catch {
-    return [];
+    await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
+      message: 'Add photos list',
+      content: encoded
+    });
   }
 }
-async function getExistingPhotos() { return getExistingFiles(PHOTO_DIR); }
-async function getExistingThumbs() { return getExistingFiles(THUMB_DIR); }
 
+// ── Render ──
 async function loadPhotos() {
   const grid = document.getElementById('photo-grid');
   const statTotal = document.getElementById('stat-total');
-  const statLoaded = document.getElementById('stat-loaded');
-
   grid.innerHTML = '<p style="color:var(--text2);grid-column:1/-1;text-align:center;padding:40px;letter-spacing:2px">加载中...</p>';
-
   try {
-    const files = await getExistingPhotos();
-    statTotal.textContent = files.length;
-    statLoaded.textContent = '–';
-
-    if (files.length === 0) {
-      grid.innerHTML = '<p style="color:var(--text2);grid-column:1/-1;text-align:center;padding:40px;letter-spacing:2px">暂无照片，请上传</p>';
+    const photos = await loadPhotoList();
+    statTotal.textContent = photos.length;
+    grid.innerHTML = '';
+    if (!photos.length) {
+      grid.innerHTML = '<p style="color:var(--text2);grid-column:1/-1;text-align:center;padding:40px">暂无照片，请上传</p>';
       return;
     }
-
-    const thumbs = await getExistingThumbs();
-    const thumbMap = {};
-    thumbs.forEach(t => { thumbMap[t.name.toLowerCase()] = t; });
-
-    grid.innerHTML = '';
-    files.forEach(f => {
-      const thumb = thumbMap[f.name.toLowerCase()];
+    photos.forEach((p, idx) => {
       const card = document.createElement('div');
       card.className = 'photo-card';
-      const imgSrc = thumb
-        ? `${GITHUB_PAGES}/${THUMB_DIR}/${thumb.name}?t=${Date.now()}`
-        : `${GITHUB_PAGES}/${PHOTO_DIR}/${f.name}?t=${Date.now()}`;
       card.innerHTML = `
-        <img src="${imgSrc}" alt="" loading="lazy" onerror="this.style.display='none'">
-        <button class="del-btn" title="删除" data-name="${f.name}" data-sha="${f.sha}" data-thumb="${thumb ? thumb.name : ''}" data-thumb-sha="${thumb ? thumb.sha : ''}">✕</button>
+        <img src="${p.thumb || p.url}" alt="" loading="lazy" onerror="this.src='${p.url}'">
+        <button class="del-btn" title="删除" data-idx="${idx}" data-name="${p.name}">✕</button>
       `;
       grid.appendChild(card);
-
       card.querySelector('.del-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
-        const name = f.name;
-        const sha = f.sha;
-        const thumbName = thumb ? thumb.name : '';
-        const thumbSha = thumb ? thumb.sha : '';
-        if (!confirm(`确认删除 ${name}？`)) return;
-        showOverlay('正在删除...', name);
+        if (!confirm(`确认删除 ${p.name}？`)) return;
+        showOverlay('正在删除...', p.name);
         try {
-          await ghApi('DELETE', `/repos/${USER}/${REPO}/contents/${PHOTO_DIR}/${name}`, {
-            message: `Delete photo: ${name}`,
-            sha
-          });
-          if (thumbSha) {
-            await ghApi('DELETE', `/repos/${USER}/${REPO}/contents/${THUMB_DIR}/${thumbName}`, {
-              message: `Delete thumb: ${thumbName}`,
-              sha: thumbSha
-            });
-          }
-          toast('已删除: ' + name, 'success');
+          const newList = photos.filter((_, i) => i !== idx);
+          await savePhotoList(newList);
+          toast('已删除: ' + p.name, 'success');
           card.remove();
-          const remaining = grid.querySelectorAll('.photo-card').length;
-          statTotal.textContent = remaining;
-          statLoaded.textContent = remaining;
-          await triggerDeploy();
+          statTotal.textContent = newList.length;
         } catch(err) {
           toast('删除失败: ' + err.message, 'error');
         } finally {
@@ -500,140 +488,44 @@ async function loadPhotos() {
         }
       });
     });
-
-    statLoaded.textContent = files.length;
-
   } catch(err) {
-    grid.innerHTML = `<p style="color:var(--danger);grid-column:1/-1;text-align:center;padding:40px;letter-spacing:1px">加载失败: ${err.message}</p>`;
+    grid.innerHTML = `<p style="color:var(--danger);grid-column:1/-1;text-align:center;padding:40px">加载失败: ${err.message}</p>`;
   }
 }
 
 // ── Upload ──
 const uploadArea = document.getElementById('upload-area');
 const fileInput = document.getElementById('file-input');
-
 uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
 uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-uploadArea.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadArea.classList.remove('dragover');
-  handleFiles(e.dataTransfer.files);
-});
+uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
 fileInput.addEventListener('change', e => handleFiles(e.target.files));
 
 async function handleFiles(files) {
   if (!files.length) return;
-
-  const jpegs = Array.from(files).filter(f =>
-    f.type === 'image/jpeg' || f.type === 'image/jpg' || f.type === 'image/png'
-  );
-  if (!jpegs.length) { toast('仅支持 JPG / PNG 格式', 'error'); return; }
-
-  showOverlay('准备上传...', `${jpegs.length} 个文件`);
-
+  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) { toast('仅支持图片格式', 'error'); return; }
+  showOverlay('准备上传...', `${imgs.length} 个文件`);
   try {
-    const [existing, existingThumbs] = await Promise.all([getExistingPhotos(), getExistingThumbs()]);
-    const existingNames = new Set(existing.map(f => f.name.toLowerCase()));
-    const existingThumbNames = new Set(existingThumbs.map(t => t.name.toLowerCase()));
-
-    const baseTree = await getCurrentTree();
-    const treeItems = [];
-    const newBlobs = [];
-    const newNames = [];
-
-    for (let i = 0; i < jpegs.length; i++) {
-      const f = jpegs[i];
-      const ext = f.type === 'image/png' ? 'png' : 'jpeg';
-      const ts = Date.now();
-      const uuid = crypto.randomUUID ? crypto.randomUUID().replace(/-/g,'') : Math.random().toString(36).slice(2);
-      let name = `${ts}_${uuid}.${ext}`;
-
-      let counter = 1;
-      while (existingNames.has(name.toLowerCase()) || newNames.map(n=>n.toLowerCase()).includes(name.toLowerCase())) {
-        name = `${ts}_${uuid}_${counter}.${ext}`;
-        counter++;
-      }
-
-      showOverlay(`生成缩略图... ${i+1}/${jpegs.length}`, f.name);
-      const buf = await f.arrayBuffer();
-      const thumbBuf = await generateThumb(new Uint8Array(buf), ext);
-
-      showOverlay(`上传中 ${i+1}/${jpegs.length}`, f.name);
-      const [blob, thumbBlob] = await Promise.all([
-        uploadBlob(new Uint8Array(buf)),
-        uploadBlob(thumbBuf)
-      ]);
-      newBlobs.push({ name, sha: blob.sha, content: buf, thumbName: name, thumbSha: thumbBlob.sha, thumbContent: thumbBuf });
-      newNames.push(name);
-      existingNames.add(name.toLowerCase());
-      existingThumbNames.add(name.toLowerCase());
+    const list = await loadPhotoList();
+    const newEntries = [];
+    for (let i = 0; i < imgs.length; i++) {
+      const f = imgs[i];
+      showOverlay(`上传中 ${i+1}/${imgs.length}`, f.name);
+      const result = await uploadImgBB(f);
+      newEntries.push({ name: f.name, url: result.url, thumb: result.thumb?.url || result.url, time: Date.now() });
     }
-
-    // Build tree: existing photos + thumbs + new photos + new thumbs
-    for (const f of existing) {
-      treeItems.push({ path: `${PHOTO_DIR}/${f.name}`, mode: '100644', type: 'blob', sha: f.sha });
-    }
-    for (const t of existingThumbs) {
-      treeItems.push({ path: `${THUMB_DIR}/${t.name}`, mode: '100644', type: 'blob', sha: t.sha });
-    }
-    for (const item of newBlobs) {
-      treeItems.push({ path: `${PHOTO_DIR}/${item.name}`, mode: '100644', type: 'blob', sha: item.sha });
-      treeItems.push({ path: `${THUMB_DIR}/${item.thumbName}`, mode: '100644', type: 'blob', sha: item.thumbSha });
-    }
-
-    showOverlay('创建提交...', '');
-
-    const ref = await ghApi('GET', `/repos/${USER}/${REPO}/git/refs/heads/${BRANCH}`);
-    const tree = await ghApi('POST', `/repos/${USER}/${REPO}/git/trees`, {
-      base_tree: baseTree,
-      tree: treeItems
-    });
-    const commit = await ghApi('POST', `/repos/${USER}/${REPO}/git/commits`, {
-      message: `Add ${newNames.length} photo(s) with thumbs\nAdded via admin panel`,
-      tree: tree.sha,
-      parents: [ref.object.sha]
-    });
-    await ghApi('PATCH', `/repos/${USER}/${REPO}/git/refs/heads/${BRANCH}`, { sha: commit.sha });
-
-    toast(`上传成功 ${newNames.length} 个文件（含缩略图）`, 'success');
-    await triggerDeploy();
-    loadPhotos();
-
+    const merged = [...newEntries, ...list];
+    showOverlay('保存列表...', '');
+    await savePhotoList(merged);
+    toast(`上传成功 ${newEntries.length} 个文件`, 'success');
+    await loadPhotos();
   } catch(err) {
     toast('上传失败: ' + err.message, 'error');
   } finally {
     hideOverlay();
     fileInput.value = '';
   }
-}
-
-// ── Thumbnail generator (canvas) ──
-async function generateThumb(buf, ext) {
-  return new Promise((resolve, reject) => {
-    const blob = new Blob([buf], { type: ext === 'png' ? 'image/png' : 'image/jpeg' });
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ratio = Math.max(1, img.width / THUMB_W);
-      canvas.width = Math.round(img.width / ratio);
-      canvas.height = Math.round(img.height / ratio);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      canvas.toBlob(blob2 => {
-        blob2.arrayBuffer().then(ab => resolve(new Uint8Array(ab)));
-      }, ext === 'png' ? 'image/png' : 'image/jpeg', 0.85);
-    };
-    img.onerror = reject;
-    img.src = url;
-  });
-}
-
-// ── Deploy ──
-async function triggerDeploy() {
-  try {
-    await ghApi('POST', `/repos/${USER}/${REPO}/pages/builds`);
-  } catch {}
 }
 </script>
 </body>
