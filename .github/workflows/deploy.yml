@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/deploy.yml'
       - 'photos.json'
       - 'index.html'
       - 'admin.html'
@@ -18,9 +19,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           ACCOUNT_ID="38b114fc42e8ef8c31f49eda5bc2fec0"
-          PROJECT="photo-portfolio"
           curl -s -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT}/deployments" \
+            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/photo-portfolio/deployments" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{"branch":"main","production":true}'
