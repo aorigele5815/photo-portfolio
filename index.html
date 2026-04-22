@@ -14,8 +14,8 @@
     .ld-t{font-family:"Cormorant Garamond",serif;font-size:24px;letter-spacing:.3em;color:var(--text)}
     .ld-t em{color:var(--gold);font-style:italic}
     .ld-b{width:100px;height:1px;background:#1a1a1a;position:relative;overflow:hidden}
-    .ld-b::after{content:"";position:absolute;top:0;left:-100%;width:100%;height:1px;background:var(--gold);animation:lb 1.5s ease forwards}
-    @keyframes lb{to{left:0}}
+    .ld-b::after{content:"";position:absolute;top:0;left:-100%;width:100%;height:1px;background:var(--gold);animation:lb 4s ease forwards}
+    @keyframes lb{to{left:0}} @keyframes lb2{to{left:0;opacity:0}} .ld-b.done::after{animation:lb2 .6s ease forwards}
     nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:24px 40px;background:linear-gradient(to bottom,rgba(8,8,8,.9) 0%,transparent 100%);transition:all .4s}
     nav.s{background:rgba(8,8,8,.96);backdrop-filter:blur(16px);padding:16px 40px}
     .nl{font-family:"Cormorant Garamond",serif;font-size:17px;letter-spacing:.18em;color:var(--text);text-decoration:none}
@@ -175,7 +175,7 @@ function preloadHD(idx) {
 
 window.addEventListener('load', () => setTimeout(() => {
   document.getElementById('loader').classList.add('out');
-}, 1600));
+}, 5000));
 window.addEventListener('scroll', () => document.getElementById('nav').classList.toggle('s', scrollY > 50));
 
 let cur = 0;
@@ -211,6 +211,18 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') nav(-1);
   if (e.key === 'ArrowRight') nav(1);
 });
+// Touch swipe
+(function() {
+  const lb = document.getElementById('lb');
+  let tx, ty;
+  lb.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+  lb.addEventListener('touchend', e => {
+    if (tx === undefined) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) nav(dx < 0 ? 1 : -1);
+  });
+})();
 
 loadGallery();
 </script>
