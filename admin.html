@@ -417,10 +417,9 @@ async function uploadImgBB(file) {
 
 // ── Photos list ──
 async function loadPhotoList() {
-  // token hardcoded
   try {
-    const r = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}&t=${Date.now()}`);
-    return JSON.parse(atob(r.content));
+    const r = await fetch(`https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/main/${GH_PHOTOS_FILE}?t=${Date.now()}`);
+    return await r.json();
   } catch { return []; }
 }
 
