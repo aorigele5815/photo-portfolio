@@ -33,10 +33,10 @@
     #gallery{padding:40px 28px 80px}
     .masonry{columns:3;column-gap:8px}
     @media(max-width:900px){.masonry{columns:2}}
-    @media(max-width:560px){.masonry{columns:1}}
+    @media(max-width:560px){.masonry{columns:2;column-gap:6px}}
     .photo-item{break-inside:avoid;margin-bottom:8px;overflow:hidden;cursor:zoom-in;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
     .photo-item.in{opacity:1;transform:none}
-    .photo-item img{display:block;width:100%;height:auto;transition:transform .6s cubic-bezier(.25,.46,.45,.94),filter .4s,opacity .4s;filter:brightness(.88) saturate(.95)}
+    .photo-item img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;background:#111;transition:transform .6s cubic-bezier(.25,.46,.45,.94),filter .4s,opacity .4s;filter:brightness(.88) saturate(.95)}
     .photo-item img.loaded{filter:brightness(1) saturate(1.05)}
     .photo-item:hover img{transform:scale(1.03)}
     #lb{position:fixed;inset:0;z-index:1000;background:rgba(5,5,5,.97);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s}
