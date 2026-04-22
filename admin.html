@@ -428,6 +428,7 @@ async function loadPhotoList() {
   if (!GH_TOKEN) { toast('请先配置 GitHub Token', 'error'); return []; }
   try {
     const r = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
+    console.log('[DEBUG] Token loaded, sha:', r.sha);
     return JSON.parse(atob(r.content));
   } catch { return []; }
 }
@@ -482,7 +483,8 @@ async function loadPhotos() {
           card.remove();
           statTotal.textContent = newList.length;
         } catch(err) {
-          toast('删除失败: ' + err.message, 'error');
+          console.error('Delete error:', err);
+          toast('删除失败: ' + err.message + ' (详情控制台)', 'error');
         } finally {
           hideOverlay();
         }
