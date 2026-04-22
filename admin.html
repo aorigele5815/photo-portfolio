@@ -50,6 +50,25 @@ body {
   cursor: pointer;
 }
 .nav a.btn:hover { background: var(--gold); color: var(--bg); }
+.sync-btn {
+  border-color: var(--success) !important;
+  color: var(--success) !important;
+}
+.sync-btn:hover { background: var(--success) !important; color: var(--bg) !important; }
+.sync-btn.syncing {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.sync-btn .spin-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 2px solid var(--success);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
 #login-view {
   display: flex;
   flex-direction: column;
@@ -258,6 +277,7 @@ body {
 <nav class="nav">
   <a href="index.html" class="logo">烂片王中王<span>· ORGIL</span></a>
   <div class="nav-right">
+    <a class="btn sync-btn" id="sync-btn" onclick="doSync()">同步前端</a>
     <a href="index.html" class="btn">返回首页</a>
     <a class="btn" onclick="logout()">退出</a>
   </div>
@@ -514,7 +534,59 @@ async function loadPhotos() {
   }
 }
 
-// ── Upload ──
+// ── Sync ──
+const CF_ACCOUNT_ID = '38b114fc42e8ef8c31f49eda5bc2fec0';
+
+function setSyncBtnState(loading) {
+  const btn = document.getElementById('sync-btn');
+  if (!btn) return;
+  if (loading) {
+    btn.classList.add('syncing');
+    btn.innerHTML = '<span class="spin-dot"></span>同步中...';
+  } else {
+    btn.classList.remove('syncing');
+    btn.textContent = '同步前端';
+  }
+}
+
+async function doSync() {
+  if (!GH_TOKEN) { toast('请先配置 GitHub Token', 'error'); return; }
+  setSyncBtnState(true);
+  showOverlay('正在同步...', '获取 GitHub 数据');
+  try {
+    // 1. 获取 photos.json 和 index.html 的 SHA
+    const [photosRes, indexRes] = await Promise.all([
+      ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`),
+      ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/index.html?ref=${GH_BRANCH}`)
+    ]);
+
+    // 2. 拉取最新的 photos.json 内容
+    const photosContent = JSON.parse(atob(photosRes.content));
+    const photosEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(photosContent, null, 2))));
+
+    showOverlay('同步中...', '推送 photos.json');
+    // 3. 推送 photos.json
+    await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
+      message: `Sync photos (${photosContent.length} photos)`,
+      content: photosEncoded,
+      sha: photosRes.sha
+    });
+
+    // 4. 触发 Cloudflare Pages 部署
+    showOverlay('同步中...', '触发 CF Pages 部署');
+    await triggerCFDeploy();
+
+    toast(`同步完成，共 ${photosContent.length} 张照片`, 'success');
+  } catch(err) {
+    console.error('Sync error:', err);
+    toast('同步失败: ' + err.message, 'error');
+  } finally {
+    setSyncBtnState(false);
+    hideOverlay();
+  }
+}
+
+
 const uploadArea = document.getElementById('upload-area');
 const fileInput = document.getElementById('file-input');
 uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
