@@ -427,8 +427,7 @@ async function uploadImgBB(file) {
 async function loadPhotoList() {
   if (!GH_TOKEN) { toast('请先配置 GitHub Token', 'error'); return []; }
   try {
-    const r = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
-    console.log('[DEBUG] Token loaded, sha:', r.sha);
+    const r = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}&t=${Date.now()}`);
     return JSON.parse(atob(r.content));
   } catch { return []; }
 }
@@ -436,19 +435,12 @@ async function loadPhotoList() {
 async function savePhotoList(list) {
   const content = JSON.stringify(list, null, 2);
   const encoded = btoa(unescape(encodeURIComponent(content)));
-  try {
-    const existing = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
-    await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
-      message: 'Update photos list',
-      content: encoded,
-      sha: existing.sha
-    });
-  } catch {
-    await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
-      message: 'Add photos list',
-      content: encoded
-    });
-  }
+  const existing = await ghApi('GET', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}?ref=${GH_BRANCH}`);
+  await ghApi('PUT', `/repos/${GH_USER}/${GH_REPO}/contents/${GH_PHOTOS_FILE}`, {
+    message: 'Update photos list',
+    content: encoded,
+    sha: existing.sha
+  });
 }
 
 // ── Render ──
@@ -474,17 +466,18 @@ async function loadPhotos() {
       grid.appendChild(card);
       card.querySelector('.del-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (!confirm(`确认删除 ${p.name}？`)) return;
-        showOverlay('正在删除...', p.name);
+        const name = p.name;
+        if (!confirm(`确认删除 ${name}？`)) return;
+        showOverlay('正在删除...', name);
         try {
-          const newList = photos.filter((_, i) => i !== idx);
+          const currentList = await loadPhotoList();
+          const newList = currentList.filter(p => p.name !== name);
           await savePhotoList(newList);
-          toast('已删除: ' + p.name, 'success');
-          card.remove();
-          statTotal.textContent = newList.length;
+          toast('已删除: ' + name, 'success');
+          await loadPhotos();
         } catch(err) {
           console.error('Delete error:', err);
-          toast('删除失败: ' + err.message + ' (详情控制台)', 'error');
+          toast('删除失败: ' + err.message, 'error');
         } finally {
           hideOverlay();
         }
