@@ -22,8 +22,13 @@
     .nl em{color:var(--gold);font-style:italic}
     .nn{font-size:10px;letter-spacing:.15em;color:var(--dim)}
     #hero{height:100vh;display:flex;align-items:flex-end;padding:0 40px 64px;position:relative;overflow:hidden}
-    .hbg{position:absolute;inset:0;background:linear-gradient(160deg,#100e0b 0%,#080808 60%)}
+    .hbg{position:absolute;inset:0;background:linear-gradient(160deg,#100e0b 0%,#080808 100%)}
     .hf{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.98) 0%,rgba(8,8,8,.3) 50%,transparent 100%)}
+    .hw{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+    .hw-inner{position:absolute;right:40px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:0;padding:80px 0}
+    .hw-line{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:3px 0;opacity:.055}
+    .hw-role{font-family:"Cormorant Garamond",serif;font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1}
+    .hw-val{font-family:"Cormorant Garamond",serif;font-size:11px;letter-spacing:.15em;color:var(--text);line-height:1.2}
     .ht{position:relative;z-index:2}
     .hl{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;opacity:0;animation:up .8s .4s forwards;transform:translateY(20px)}
     .hh{font-family:"Cormorant Garamond",serif;font-size:clamp(48px,8vw,88px);font-weight:300;line-height:1.05;color:#fff;margin-bottom:18px;opacity:0;animation:up .8s .6s forwards;transform:translateY(20px)}
@@ -63,7 +68,30 @@
   <span class="nn" id="nc">— 张</span>
 </nav>
 <section id="hero">
-  <div class="hbg"></div><div class="hf"></div>
+  <div class="hbg"></div>
+  <div class="hw">
+    <div class="hw-inner">
+      <div class="hw-line"><span class="hw-role">导演</span><span class="hw-val">你</span></div>
+      <div class="hw-line"><span class="hw-role">摄影</span><span class="hw-val">手抖</span></div>
+      <div class="hw-line"><span class="hw-role">灯光</span><span class="hw-val">路灯</span></div>
+      <div class="hw-line"><span class="hw-role">ISO</span><span class="hw-val">12800</span></div>
+      <div class="hw-line"><span class="hw-role">焦距</span><span class="hw-val">跑焦</span></div>
+      <div class="hw-line"><span class="hw-role">构图</span><span class="hw-val">歪的</span></div>
+      <div class="hw-line"><span class="hw-role">滤镜</span><span class="hw-val">全靠 LUT</span></div>
+      <div class="hw-line"><span class="hw-role">后期</span><span class="hw-val">UVR</span></div>
+      <div class="hw-line"><span class="hw-role">调色</span><span class="hw-val">随便</span></div>
+      <div class="hw-line"><span class="hw-role">存储</span><span class="hw-val">ImgBB</span></div>
+      <div class="hw-line"><span class="hw-role">画质</span><span class="hw-val">压过了</span></div>
+      <div class="hw-line"><span class="hw-role">快门</span><span class="hw-val">凭感觉</span></div>
+      <div class="hw-line"><span class="hw-role">器材</span><span class="hw-val">凑合用</span></div>
+      <div class="hw-line"><span class="hw-role">背景</span><span class="hw-val">脏乱差</span></div>
+      <div class="hw-line"><span class="hw-role">模特</span><span class="hw-val">没有</span></div>
+      <div class="hw-line"><span class="hw-role">天气</span><span class="hw-val">不讲究</span></div>
+      <div class="hw-line"><span class="hw-role">审美</span><span class="hw-val">摆烂</span></div>
+      <div class="hw-line"><span class="hw-role">风格</span><span class="hw-val">废片风</span></div>
+    </div>
+  </div>
+  <div class="hf"></div>
   <div class="ht">
     <p class="hl">摄影 &middot; Photography</p>
     <h1 class="hh">烂片<br><em>王中王</em></h1>
