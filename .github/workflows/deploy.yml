@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'photos.json'
+      - 'index.html'
+      - 'admin.html'
   workflow_dispatch:
 
 jobs:
