@@ -109,7 +109,7 @@ async function loadGallery() {
       item.dataset.index = idx;
       item.onclick = () => openLightbox(idx);
       const img = document.createElement('img');
-      img.src = photo.thumb || photo.url;
+      img.src = photo.url;
       img.alt = photo.name || '';
       img.loading = 'lazy';
       img.onload = () => img.classList.add('loaded');
