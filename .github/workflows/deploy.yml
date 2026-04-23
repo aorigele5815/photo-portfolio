@@ -4,10 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/deploy.yml'
-      - 'photos.json'
-      - 'index.html'
-      - 'admin.html'
+      - ".github/workflows/deploy.yml"
+      - "photos.json"
+      - "index.html"
+      - "admin.html"
   workflow_dispatch:
 
 jobs:
@@ -17,12 +17,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
       - name: Configure wrangler
         run: |
           mkdir -p ~/.config/.wrangler
-          printf '%s
-' '[defaults]' 'account_id = "38b114fc42e8ef8c31f49eda5bc2fec0"' > ~/.config/.wrangler/config.toml
+          echo "[defaults]" > ~/.config/.wrangler/config.toml
+          echo "account_id = "38b114fc42e8ef8c31f49eda5bc2fec0"" >> ~/.config/.wrangler/config.toml
       - name: Deploy via wrangler
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
