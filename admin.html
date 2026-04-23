@@ -501,11 +501,14 @@ async function ghApi(method, path, data) {
     headers: ghHeaders(),
     body: data ? JSON.stringify(data) : undefined
   });
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || 'HTTP ' + res.status);
+    const e = new Error(json.message || 'HTTP ' + res.status);
+    e.status = res.status;
+    e.json = json;
+    throw e;
   }
-  return res.json();
+  return json;
 }
 
 // ── ImgBB Upload ──
@@ -544,7 +547,7 @@ async function putPhotosJson(content, message, maxRetries = 3) {
       });
       return;
     } catch(err) {
-      if (attempt < maxRetries - 1 && (err.message.includes('SHA') || err.message.includes('409') || err.message.includes('conflict'))) {
+      if (attempt < maxRetries - 1 && (err.status === 409 || err.status === 422 || err.message.includes('SHA') || err.message.includes('409') || err.message.includes('conflict') || (err.json?.errors && err.json.errors.some(e => e.code === 'invalid')))) {
         await new Promise(r => setTimeout(r, 500));
         continue;
       }
@@ -710,3 +713,4 @@ async function doSync() {
 </script>
 </body>
 </html>
+
