@@ -174,13 +174,7 @@ async function loadGallery() {
     // Phase 1: wait all thumbs loaded, show progress
     const allThumbsDone = () => [...masonry.querySelectorAll('img')].every(img => img.classList.contains('loaded'));
     function waitThumbs() {
-      const loaded = [...masonry.querySelectorAll('img')].filter(img => img.classList.contains('loaded')).length;
-      const total = P.length;
-      const pb = document.getElementById('lb-progress');
-      if (pb) pb.textContent = `缩略图 ${loaded}/${total}`;
       if (allThumbsDone()) {
-        if (pb) pb.textContent = '缩略图完成 → 加载原图';
-        setTimeout(() => { if (pb) pb.remove(); }, 800);
         // Phase 2: progressively swap to full-res
         const imgs = masonry.querySelectorAll('img');
         let i = 0;
@@ -196,11 +190,6 @@ async function loadGallery() {
       }
       setTimeout(waitThumbs, 150);
     }
-    const pb = document.createElement('div');
-    pb.id = 'lb-progress';
-    pb.textContent = '缩略图 0/' + P.length;
-    pb.style.cssText = 'position:fixed;bottom:20px;right:20px;background:rgba(0,0,0,.85);color:#c9a96e;padding:8px 18px;font-size:12px;font-family:Inter,sans-serif;z-index:9999;letter-spacing:.05em';
-    document.body.appendChild(pb);
     waitThumbs();
 
     const obs = new IntersectionObserver(es => es.forEach(e => {
